@@ -1,0 +1,1079 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=1024"/>
+  <title>건설현장 관리자 대시보드</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+  <style>
+    :root{
+      --bg:#0d0f14;--surface:#161a22;--card:#1c2130;--border:#2a3145;
+      --accent:#f5a623;--danger:#e84545;--safe:#27c97e;--warning:#f5a623;
+      --blue:#5b8af5;--purple:#a855f7;--cyan:#22d3ee;--text:#e8eaf0;--muted:#6b7592;
+      --chrome:#13161f;--media-bg:#05070c;
+    }
+    body[data-theme="light"]{
+      --bg:#eef2f7;--surface:#f8fafc;--card:#ffffff;--border:#d5deeb;
+      --accent:#e69716;--danger:#dc2626;--safe:#15803d;--warning:#d08610;
+      --blue:#2563eb;--purple:#7c3aed;--cyan:#0891b2;--text:#0f172a;--muted:#5f6b85;
+      --chrome:#e9eff7;--media-bg:#dbe6f4;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:20px;}
+    .ipad-shell{width:1024px;min-height:768px;background:var(--surface);border-radius:18px;border:2px solid var(--border);overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.7);animation:fadeUp .5s ease both;}
+    body[data-theme="light"] .ipad-shell{box-shadow:0 24px 64px rgba(15,23,42,.2);}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+
+    /* TOP BAR */
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--chrome);border-bottom:1px solid var(--border);}
+    .topbar-left{display:flex;align-items:center;gap:12px;}
+    .site-badge{display:flex;align-items:center;gap:8px;}
+    .site-badge .icon{width:32px;height:32px;background:var(--accent);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:16px;}
+    .site-name{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;}
+    .site-sub{font-size:11px;color:var(--muted);}
+    .divider-v{width:1px;height:32px;background:var(--border);}
+    .status-pill{display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:100px;font-size:11px;font-weight:500;background:rgba(39,201,126,.12);border:1px solid rgba(39,201,126,.3);color:var(--safe);}
+    .status-pill .dot{width:6px;height:6px;border-radius:50%;background:var(--safe);animation:pulse 2s infinite;}
+    @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+    .topbar-right{display:flex;align-items:center;gap:14px;}
+    .time-display{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--muted);text-align:right;}
+    .time-display .time{font-size:18px;color:var(--text);font-weight:600;}
+    .ws-status{font-size:11px;padding:4px 10px;border-radius:100px;background:rgba(232,69,69,.15);border:1px solid rgba(232,69,69,.3);color:var(--danger);}
+    .ws-status.connected{background:rgba(39,201,126,.12);border-color:rgba(39,201,126,.3);color:var(--safe);}
+
+    /* MAIN */
+    .main{display:grid;grid-template-columns:220px 1fr;height:calc(100% - 62px);}
+
+    /* SIDEBAR */
+    .sidebar{background:var(--chrome);border-right:1px solid var(--border);padding:20px 0;display:flex;flex-direction:column;gap:4px;}
+    .sidebar-section{padding:0 14px;margin-bottom:8px;}
+    .sidebar-label{font-size:10px;font-weight:700;letter-spacing:1.5px;color:var(--muted);text-transform:uppercase;padding:0 8px;margin-bottom:4px;}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .2s;position:relative;}
+    .nav-item:hover{background:rgba(255,255,255,.04);color:var(--text);}
+    .nav-item.active{background:rgba(245,166,35,.1);color:var(--accent);}
+    .nav-item.active::before{content:'';position:absolute;left:0;top:6px;bottom:6px;width:3px;background:var(--accent);border-radius:0 3px 3px 0;}
+    .nav-icon{font-size:16px;width:20px;text-align:center;}
+    .nav-count{margin-left:auto;font-family:'JetBrains Mono',monospace;font-size:11px;padding:2px 6px;border-radius:100px;background:var(--danger);color:#fff;}
+    .sidebar-footer{margin-top:auto;padding:14px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:10px;}
+    .user-card{display:flex;align-items:center;gap:10px;padding:10px;border-radius:10px;background:var(--card);border:1px solid var(--border);}
+    .avatar{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,#f5a623,#e84545);display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0;}
+    .user-info .name{font-size:13px;font-weight:500;}
+    .user-info .role{font-size:11px;color:var(--muted);}
+    .theme-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px;border-radius:10px;background:var(--card);border:1px solid var(--border);}
+    .theme-card-label{font-size:10px;color:var(--muted);font-weight:700;letter-spacing:1px;text-transform:uppercase;}
+    .theme-card-mode{font-size:12px;color:var(--text);margin-top:2px;}
+    .theme-switch{position:relative;display:inline-block;width:46px;height:24px;flex-shrink:0;}
+    .theme-switch input{opacity:0;width:0;height:0;}
+    .theme-slider{position:absolute;inset:0;border-radius:100px;background:var(--border);cursor:pointer;transition:background .2s;}
+    .theme-slider::before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;border-radius:50%;background:#fff;transition:transform .2s;}
+    .theme-switch input:checked + .theme-slider{background:var(--accent);}
+    .theme-switch input:checked + .theme-slider::before{transform:translateX(22px);}
+
+    /* CONTENT */
+    .content{overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;}
+    .content::-webkit-scrollbar{width:3px;}
+    .content::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+    .page{display:none;flex-direction:column;gap:14px;animation:fadeUp .3s ease;}
+    .page.active{display:flex;}
+
+    /* COMMON */
+    .section-header{display:flex;align-items:center;justify-content:space-between;}
+    .section-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1.5px;color:var(--muted);}
+    .panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;}
+    .panel-title{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:1.5px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
+    .btn-sm{font-size:11px;padding:5px 12px;border-radius:6px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;transition:all .2s;font-family:'Noto Sans KR',sans-serif;}
+    .btn-sm:hover{color:var(--text);border-color:var(--accent);}
+    .btn-primary{font-size:12px;padding:7px 16px;border-radius:8px;border:none;background:var(--accent);color:#111;cursor:pointer;font-weight:700;transition:opacity .2s;}
+    .btn-primary:hover{opacity:.85;}
+    .btn-danger{font-size:12px;padding:7px 16px;border-radius:8px;border:none;background:var(--danger);color:#fff;cursor:pointer;font-weight:700;}
+    .btn-danger-xs{font-size:11px;padding:4px 10px;border-radius:6px;border:none;background:var(--danger);color:#fff;cursor:pointer;font-weight:700;}
+
+    /* KPI */
+    .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+    .kpi-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;}
+    .kpi-card:hover{transform:translateY(-2px);border-color:var(--accent);}
+    .kpi-card::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;}
+    .kpi-card.ok::after{background:var(--safe);}
+    .kpi-card.warn::after{background:var(--warning);}
+    .kpi-card.bad::after{background:var(--danger);}
+    .kpi-card.info::after{background:var(--blue);}
+    .kpi-label{font-size:11px;color:var(--muted);letter-spacing:.5px;margin-bottom:8px;}
+    .kpi-value{font-family:'Bebas Neue',sans-serif;font-size:36px;letter-spacing:1px;line-height:1;margin-bottom:6px;}
+    .kpi-card.ok .kpi-value{color:var(--safe);}
+    .kpi-card.warn .kpi-value{color:var(--warning);}
+    .kpi-card.bad .kpi-value{color:var(--danger);}
+    .kpi-card.info .kpi-value{color:var(--blue);}
+    .kpi-delta{font-size:11px;color:var(--muted);}
+    .kpi-icon{position:absolute;bottom:12px;right:14px;font-size:26px;opacity:.12;}
+
+    /* ZONES */
+    .zone-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;}
+    .zone{border-radius:8px;padding:10px 12px;border:1px solid transparent;}
+    .zone.safe{background:rgba(39,201,126,.08);border-color:rgba(39,201,126,.2);}
+    .zone.caution{background:rgba(245,166,35,.08);border-color:rgba(245,166,35,.2);}
+    .zone.danger{background:rgba(232,69,69,.1);border-color:rgba(232,69,69,.25);}
+    .zone-name{font-size:11px;font-weight:700;letter-spacing:.5px;margin-bottom:4px;}
+    .zone.safe .zone-name{color:var(--safe);}
+    .zone.caution .zone-name{color:var(--warning);}
+    .zone.danger .zone-name{color:var(--danger);}
+    .zone-workers{font-family:'JetBrains Mono',monospace;font-size:18px;font-weight:600;color:var(--text);}
+    .zone-sub{font-size:10px;color:var(--muted);}
+
+    /* PROGRESS */
+    .progress-list{display:flex;flex-direction:column;gap:10px;}
+    .progress-header{display:flex;justify-content:space-between;margin-bottom:5px;font-size:12px;}
+    .progress-name{color:var(--text);font-weight:500;}
+    .progress-pct{font-family:'JetBrains Mono',monospace;color:var(--muted);}
+    .progress-track{height:5px;background:var(--border);border-radius:100px;overflow:hidden;}
+    .progress-fill{height:100%;border-radius:100px;transition:width 1s ease;}
+
+    /* ALERTS */
+    .alert-list{display:flex;flex-direction:column;gap:8px;}
+    .alert-item{display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid transparent;font-size:12px;}
+    .alert-item.level-high{background:rgba(232,69,69,.07);border-color:rgba(232,69,69,.2);}
+    .alert-item.level-mid{background:rgba(245,166,35,.07);border-color:rgba(245,166,35,.2);}
+    .alert-item.level-low{background:rgba(91,138,245,.07);border-color:rgba(91,138,245,.2);}
+    .alert-dot{width:8px;height:8px;border-radius:50%;margin-top:3px;flex-shrink:0;}
+    .level-high .alert-dot{background:var(--danger);}
+    .level-mid .alert-dot{background:var(--warning);}
+    .level-low .alert-dot{background:var(--blue);}
+    .alert-text{color:var(--text);line-height:1.5;}
+    .alert-time{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);}
+    .alert-resolve-btn{margin-left:auto;font-size:10px;padding:2px 8px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--muted);cursor:pointer;white-space:nowrap;transition:all .2s;}
+    .alert-resolve-btn:hover{border-color:var(--safe);color:var(--safe);}
+
+    /* WORKER TABLE */
+    .worker-table{width:100%;border-collapse:collapse;font-size:12px;}
+    .worker-table th{text-align:left;padding:0 8px 8px;font-size:10px;font-weight:700;letter-spacing:1px;color:var(--muted);text-transform:uppercase;border-bottom:1px solid var(--border);}
+    .worker-table td{padding:9px 8px;border-bottom:1px solid rgba(42,49,69,.5);vertical-align:middle;}
+    .worker-table tr:last-child td{border-bottom:none;}
+    .worker-table tr:hover td{background:rgba(255,255,255,.02);}
+    .worker-name{display:flex;align-items:center;gap:8px;}
+    .mini-avatar{width:24px;height:24px;border-radius:5px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);flex-shrink:0;}
+    .status-tag{display:inline-block;padding:2px 8px;border-radius:100px;font-size:10px;font-weight:500;}
+    .status-tag.work{background:rgba(39,201,126,.15);color:var(--safe);}
+    .status-tag.rest{background:rgba(245,166,35,.15);color:var(--warning);}
+    .status-tag.absent{background:rgba(232,69,69,.15);color:var(--danger);}
+
+    /* SENSOR */
+    .sensor-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+    .sensor-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;text-align:center;}
+    .sensor-icon{font-size:28px;margin-bottom:8px;}
+    .sensor-label{font-size:11px;color:var(--muted);margin-bottom:6px;}
+    .sensor-value{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:600;color:var(--text);}
+    .sensor-unit{font-size:11px;color:var(--muted);}
+    .sensor-status{font-size:11px;margin-top:6px;}
+    .sensor-status.ok{color:var(--safe);}
+    .sensor-status.warn{color:var(--warning);}
+    .sensor-status.bad{color:var(--danger);}
+
+    /* WEATHER */
+    .weather-strip{display:flex;align-items:center;gap:20px;padding:12px 16px;background:var(--card);border:1px solid var(--border);border-radius:10px;}
+    .weather-main{display:flex;align-items:center;gap:8px;}
+    .weather-temp{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--text);}
+    .weather-desc{font-size:11px;color:var(--muted);}
+    .weather-divider{width:1px;height:30px;background:var(--border);}
+    .weather-stat{font-size:11px;color:var(--muted);display:flex;align-items:center;gap:4px;}
+    .weather-stat span{color:var(--text);font-weight:500;}
+
+    /* FORM */
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .form-group{display:flex;flex-direction:column;gap:6px;}
+    .form-label{font-size:11px;color:var(--muted);font-weight:600;letter-spacing:.5px;text-transform:uppercase;}
+    .form-input,.form-select{padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;transition:border-color .2s;}
+    .form-input:focus,.form-select:focus{border-color:var(--accent);}
+    .form-select option{background:var(--bg);}
+    .form-textarea{padding:9px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);color:var(--text);font-family:'Noto Sans KR',sans-serif;font-size:13px;outline:none;resize:vertical;width:100%;transition:border-color .2s;}
+    .form-textarea:focus{border-color:var(--accent);}
+
+    /* VOICE RECORDER */
+    .recorder-box{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px;background:var(--bg);border-radius:12px;border:1px dashed var(--border);}
+    .record-btn{width:64px;height:64px;border-radius:50%;border:none;cursor:pointer;font-size:28px;transition:all .2s;background:var(--card);border:2px solid var(--border);}
+    .record-btn.recording{background:rgba(232,69,69,.2);border-color:var(--danger);animation:recordPulse 1s ease infinite;}
+    @keyframes recordPulse{0%,100%{box-shadow:0 0 0 0 rgba(232,69,69,.4);}50%{box-shadow:0 0 0 12px rgba(232,69,69,0);}}
+    .record-status{font-size:12px;color:var(--muted);font-family:'JetBrains Mono',monospace;}
+    .record-timer{font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text);}
+    .stt-result{width:100%;padding:12px;border-radius:8px;background:rgba(39,201,126,.05);border:1px solid rgba(39,201,126,.2);font-size:13px;line-height:1.7;color:var(--text);min-height:80px;white-space:pre-wrap;}
+
+    /* PHOTO GALLERY */
+    .photo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+    .photo-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;transition:transform .2s,border-color .2s;}
+    .photo-card:hover{transform:translateY(-2px);border-color:var(--accent);}
+    .photo-card.risk{border-color:rgba(232,69,69,.4);}
+    .photo-thumb{width:100%;height:120px;object-fit:cover;background:var(--bg);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--muted);}
+    .photo-thumb img{width:100%;height:100%;object-fit:cover;}
+    .photo-info{padding:10px 12px;}
+    .photo-ai{font-size:10px;color:var(--muted);line-height:1.5;margin-top:4px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .photo-risk-badge{display:inline-block;font-size:9px;padding:2px 7px;border-radius:100px;font-weight:700;}
+    .photo-risk-badge.risk{background:rgba(232,69,69,.2);color:var(--danger);}
+    .photo-risk-badge.safe{background:rgba(39,201,126,.2);color:var(--safe);}
+
+    /* UPLOAD ZONE */
+    .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:border-color .2s;}
+    .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);}
+    .upload-zone-icon{font-size:36px;margin-bottom:10px;}
+    .upload-zone-text{font-size:13px;color:var(--muted);}
+    .photo-mode-row{display:flex;gap:8px;margin:10px 0 8px;}
+    .photo-mode-btn{font-size:12px;padding:7px 12px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--muted);cursor:pointer;font-weight:600;transition:all .2s;}
+    .photo-mode-btn.active{background:rgba(0,229,255,.14);border-color:var(--accent);color:var(--text);}
+    .photo-input-section{margin-top:10px;}
+    .camera-box{background:var(--bg);border:1px solid var(--border);border-radius:12px;padding:12px;}
+    .camera-video-wrap{width:100%;border-radius:10px;overflow:hidden;background:var(--media-bg);border:1px solid var(--border);}
+    .camera-video,.camera-preview{display:block;width:100%;max-height:320px;object-fit:cover;}
+    .camera-actions{display:flex;gap:8px;margin-top:10px;}
+    .camera-hint{font-size:11px;color:var(--muted);margin-top:8px;}
+
+    /* REPORT LIST */
+    .report-item{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:border-color .2s;}
+    .report-item:hover{border-color:var(--accent);}
+    .report-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);margin-bottom:5px;}
+    .report-author{font-size:11px;color:var(--muted);}
+    .report-preview{font-size:12px;color:var(--text);margin-top:6px;line-height:1.6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+    .report-detail{font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap;background:var(--bg);padding:16px;border-radius:8px;border:1px solid var(--border);margin-top:10px;}
+
+    /* LOADING */
+    .loading{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);padding:20px 0;}
+    .spinner{width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg);}}
+    body[data-theme="light"] .nav-item:hover{background:rgba(15,23,42,.06);}
+    body[data-theme="light"] .worker-table tr:hover td{background:rgba(15,23,42,.03);}
+  </style>
+</head>
+<body>
+<div class="ipad-shell">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="site-badge">
+        <div class="icon">🏗️</div>
+        <div>
+          <div class="site-name">한강 스카이타워 현장</div>
+          <div class="site-sub">서울 마포구 · 공정률 67% · 현장코드 #LGEDX-2026-92</div>
+        </div>
+      </div>
+      <div class="divider-v"></div>
+      <div class="status-pill"><div class="dot"></div>정상 운영 중</div>
+    </div>
+    <div class="topbar-right">
+      <div id="wsStatus" class="ws-status">● 서버 연결 중...</div>
+      <div class="time-display">
+        <div class="time" id="clock">--:--:--</div>
+        <div id="dateDisplay" style="font-size:11px;color:var(--muted);">로딩 중</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-section">
+        <div class="sidebar-label">메인 메뉴</div>
+        <div class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span>현황 대시보드</div>
+        <div class="nav-item" data-page="workers"><span class="nav-icon">👷</span>인력 관리</div>
+        <div class="nav-item" data-page="zones"><span class="nav-icon">🗺️</span>구역 현황</div>
+        <div class="nav-item" data-page="progress"><span class="nav-icon">📋</span>공정 관리</div>
+        <div class="nav-item" data-page="sensors"><span class="nav-icon">📡</span>센서 현황</div>
+      </div>
+      <div class="sidebar-section">
+        <div class="sidebar-label">기록 / 안전</div>
+        <div class="nav-item" data-page="alerts"><span class="nav-icon">⚠️</span>안전 알림<span class="nav-count" id="alertCount">0</span></div>
+        <div class="nav-item" data-page="report"><span class="nav-icon">📝</span>일일 보고서</div>
+        <div class="nav-item" data-page="photos"><span class="nav-icon">📸</span>현장 사진</div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="sidebar-label">설정</div>
+        <div class="nav-item"><span class="nav-icon">🔔</span> 알림 설정</div>
+        <div class="nav-item"><span class="nav-icon">⚙️</span> 환경 설정</div>
+      </div>
+      <div class="sidebar-footer">
+        <div class="user-card">
+          <div class="avatar">김</div>
+          <div class="user-info">
+            <div class="name">김현수 소장</div>
+            <div class="role">현장 총괄 관리자</div>
+          </div>
+        </div>
+        <div class="theme-card">
+          <div>
+            <div class="theme-card-label">테마 모드</div>
+            <div class="theme-card-mode" id="themeModeText">다크 모드</div>
+          </div>
+          <label class="theme-switch">
+            <input id="themeSwitch" type="checkbox" aria-label="라이트 모드 전환" onchange="toggleTheme()"/>
+            <span class="theme-slider"></span>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ── 대시보드 ─────────────────────────────────── -->
+      <div class="page active" id="page-dashboard">
+        <div class="weather-strip">
+          <div class="weather-main">
+            <div style="font-size:28px;" id="weatherIcon">🌤️</div>
+            <div><div class="weather-temp" id="weatherTemp">--°C</div><div class="weather-desc" id="weatherDesc">날씨 로딩 중 · 서울</div></div>
+          </div>
+          <div class="weather-divider"></div>
+          <div class="weather-stat">💧 습도 <span id="weatherHumidity">--%</span></div>
+          <div class="weather-stat">💨 풍속 <span id="weatherWind">--m/s</span></div>
+          <div class="weather-stat">🌅 일몰 <span id="weatherSunset">--:--</span></div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card ok"><div class="kpi-label">현장 인원</div><div class="kpi-value" id="kpi-workers">—</div><div class="kpi-delta">작업 중</div><div class="kpi-icon">👷</div></div>
+          <div class="kpi-card warn"><div class="kpi-label">평균 공정률</div><div class="kpi-value" id="kpi-progress">67%</div><div class="kpi-delta">전체 공종 평균</div><div class="kpi-icon">📈</div></div>
+          <div class="kpi-card bad"><div class="kpi-label">미처리 알림</div><div class="kpi-value" id="kpi-alerts">—</div><div class="kpi-delta down">즉시 확인 필요</div><div class="kpi-icon">⚠️</div></div>
+          <div class="kpi-card info"><div class="kpi-label">현재 온도</div><div class="kpi-value" id="kpi-temp">—</div><div class="kpi-delta">센서 실시간</div><div class="kpi-icon">🌡️</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="panel"><div class="panel-title">🗺️ 구역별 인원</div><div class="zone-grid" id="dash-zones"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div></div>
+          <div class="panel"><div class="panel-title">⚠️ 최근 알림</div><div class="alert-list" id="dash-alerts"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div></div>
+        </div>
+      </div>
+
+      <!-- ── 인력 관리 ─────────────────────────────────── -->
+      <div class="page" id="page-workers">
+        <div class="section-header">
+          <div class="section-title">인력 관리</div>
+          <button class="btn-primary" onclick="toggleForm('addWorkerForm')">+ 작업자 등록</button>
+        </div>
+        <div class="panel" id="addWorkerForm" style="display:none;">
+          <div class="panel-title">✏️ 작업자 등록</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">이름</label><input class="form-input" id="wName" placeholder="홍길동"/></div>
+            <div class="form-group"><label class="form-label">직책</label><input class="form-input" id="wRole" placeholder="전기 반장"/></div>
+            <div class="form-group"><label class="form-label">연락처</label><input class="form-input" id="wPhone" placeholder="010-0000-0000"/></div>
+            <div class="form-group"><label class="form-label">담당 구역</label>
+              <select class="form-select" id="wZone">
+                <option value="">선택</option>
+                <option value="1">A구역</option><option value="2">B구역</option>
+                <option value="3">C구역</option><option value="4">D구역</option>
+                <option value="5">E구역</option><option value="6">F구역</option>
+              </select>
+            </div>
+          </div>
+          <div style="display:flex;gap:8px;margin-top:14px;">
+            <button class="btn-primary" onclick="submitAddWorker()">등록</button>
+            <button class="btn-sm" onclick="toggleForm('addWorkerForm')">취소</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">👷 전체 작업자</div>
+          <table class="worker-table">
+            <thead><tr><th>이름/직책</th><th>연락처</th><th>담당 구역</th><th>상태</th><th>관리</th></tr></thead>
+            <tbody id="workerTableBody"><tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px;">불러오는 중...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── 구역 현황 ─────────────────────────────────── -->
+      <div class="page" id="page-zones">
+        <div class="section-title">구역 현황</div>
+        <div class="zone-grid" id="fullZoneGrid" style="grid-template-columns:repeat(3,1fr);gap:12px;"></div>
+      </div>
+
+      <!-- ── 공정 관리 ─────────────────────────────────── -->
+      <div class="page" id="page-progress">
+        <div class="section-title">공종별 진행률</div>
+        <div class="panel"><div class="progress-list" id="progressList"></div></div>
+      </div>
+
+      <!-- ── 센서 현황 ─────────────────────────────────── -->
+      <div class="page" id="page-sensors">
+        <div class="section-title">센서 실시간 현황</div>
+        <div class="sensor-grid">
+          <div class="sensor-card"><div class="sensor-icon">🌡️</div><div class="sensor-label">온도</div><div class="sensor-value" id="s-temp">—</div><div class="sensor-unit">°C</div><div class="sensor-status ok" id="s-temp-st">정상</div></div>
+          <div class="sensor-card"><div class="sensor-icon">💧</div><div class="sensor-label">습도</div><div class="sensor-value" id="s-hum">—</div><div class="sensor-unit">%</div><div class="sensor-status ok" id="s-hum-st">정상</div></div>
+          <div class="sensor-card"><div class="sensor-icon">🌫️</div><div class="sensor-label">미세먼지</div><div class="sensor-value" id="s-dust">—</div><div class="sensor-unit">µg/m³</div><div class="sensor-status ok" id="s-dust-st">정상</div></div>
+          <div class="sensor-card"><div class="sensor-icon">☁️</div><div class="sensor-label">가스</div><div class="sensor-value" id="s-gas">—</div><div class="sensor-unit">ppm</div><div class="sensor-status ok" id="s-gas-st">정상</div></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">📡 수신 로그</div>
+          <div id="sensorLog" style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);height:160px;overflow-y:auto;display:flex;flex-direction:column;gap:4px;"><span>대기 중...</span></div>
+        </div>
+      </div>
+
+      <!-- ── 안전 알림 ─────────────────────────────────── -->
+      <div class="page" id="page-alerts">
+        <div class="section-header">
+          <div class="section-title">안전 알림</div>
+          <button class="btn-primary" onclick="toggleForm('addAlertForm')">+ 수동 등록</button>
+        </div>
+        <div class="panel" id="addAlertForm" style="display:none;">
+          <div class="panel-title">✏️ 알림 수동 등록</div>
+          <div class="form-grid">
+            <div class="form-group"><label class="form-label">위험 수준</label>
+              <select class="form-select" id="aLevel">
+                <option value="high">높음</option><option value="mid">중간</option><option value="low">낮음</option>
+              </select>
+            </div>
+            <div class="form-group"><label class="form-label">발생 위치</label><input class="form-input" id="aSource" placeholder="C구역 3층"/></div>
+          </div>
+          <div class="form-group" style="margin-top:10px;"><label class="form-label">내용</label><input class="form-input" id="aMessage" placeholder="알림 내용 입력"/></div>
+          <div style="display:flex;gap:8px;margin-top:14px;">
+            <button class="btn-primary" onclick="submitAddAlert()">등록</button>
+            <button class="btn-sm" onclick="toggleForm('addAlertForm')">취소</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">⚠️ 미처리 알림</div>
+          <div class="alert-list" id="fullAlertList"></div>
+        </div>
+      </div>
+
+      <!-- ── 일일 보고서 ───────────────────────────────── -->
+      <div class="page" id="page-report">
+        <div class="section-header">
+          <div class="section-title">일일 보고서</div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">🎙️ 음성으로 보고서 작성</div>
+          <div class="recorder-box">
+            <div class="record-timer" id="recordTimer">00:00</div>
+            <button class="record-btn" id="recordBtn" onclick="toggleRecording()">🎙️</button>
+            <div class="record-status" id="recordStatus">버튼을 눌러 녹음 시작</div>
+            <div id="sttResult" class="stt-result" style="display:none;"></div>
+            <div id="recordActions" style="display:none;gap:8px;display:flex;">
+              <button class="btn-primary" onclick="saveReport()">보고서 저장</button>
+              <button class="btn-sm" onclick="resetRecorder()">다시 녹음</button>
+            </div>
+          </div>
+          <div style="margin-top:12px;">
+            <div class="form-label" style="margin-bottom:6px;">또는 직접 입력</div>
+            <textarea class="form-textarea" id="manualReport" rows="4" placeholder="보고서 내용을 직접 입력하세요..."></textarea>
+            <button class="btn-sm" style="margin-top:8px;" onclick="saveManualReport()">텍스트로 저장</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">📋 보고서 목록</div>
+          <div id="reportList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+      </div>
+
+      <!-- ── 현장 사진 ─────────────────────────────────── -->
+      <div class="page" id="page-photos">
+        <div class="section-header">
+          <div class="section-title">현장 사진</div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">📤 사진 입력, AI 자동 분석</div>
+          <div class="photo-mode-row">
+            <button class="photo-mode-btn" id="photoModeCameraBtn" onclick="switchPhotoInputMode('camera')">사진 촬영하기</button>
+            <button class="photo-mode-btn active" id="photoModeUploadBtn" onclick="switchPhotoInputMode('upload')">사진 업로드</button>
+            
+          </div>
+
+          <div id="photoUploadSection" class="photo-input-section">
+            <div class="upload-zone" id="uploadZone" onclick="document.getElementById('photoInput').click()" ondragover="event.preventDefault();this.classList.add('dragover')" ondragleave="this.classList.remove('dragover')" ondrop="handlePhotoDrop(event)">
+              <div class="upload-zone-icon">📸</div>
+              <div class="upload-zone-text">클릭하거나 사진을 드래그해서 업로드<br/><span style="font-size:11px;color:var(--muted);">업로드 즉시 Claude AI가 현장 위험요소를 분석합니다</span></div>
+            </div>
+            <input type="file" id="photoInput" accept="image/*" multiple style="display:none;" onchange="handlePhotoUpload(event)"/>
+          </div>
+
+          <div id="photoCameraSection" class="photo-input-section" style="display:none;">
+            <div class="camera-box">
+              <div class="camera-video-wrap">
+                <video id="cameraPreview" class="camera-video" autoplay playsinline muted></video>
+                <img id="capturedPhotoPreview" class="camera-preview" alt="촬영 미리보기" style="display:none;"/>
+                <canvas id="cameraCanvas" style="display:none;"></canvas>
+              </div>
+              <div class="camera-actions">
+                <button class="btn-primary" id="cameraCaptureBtn" onclick="capturePhoto()">촬영</button>
+                <button class="btn-sm" id="cameraRetakeBtn" onclick="retakeCapturedPhoto()" style="display:none;">다시 촬영</button>
+                <button class="btn-primary" id="cameraSaveBtn" onclick="uploadCapturedPhoto()" style="display:none;">촬영본 저장</button>
+              </div>
+              <div class="camera-hint" id="cameraStatus">카메라 권한을 허용한 뒤 촬영 버튼을 눌러 저장하세요.</div>
+            </div>
+          </div>
+
+          <div style="margin-top:10px;">
+            <label class="form-label">구역 선택</label>
+            <select class="form-select" id="photoZone" style="margin-top:6px;width:160px;">
+              <option value="">전체</option>
+              <option value="1">A구역</option><option value="2">B구역</option>
+              <option value="3">C구역</option><option value="4">D구역</option>
+              <option value="5">E구역</option><option value="6">F구역</option>
+            </select>
+          </div>
+          <div id="uploadProgress" style="display:none;margin-top:10px;" class="loading"><div class="spinner"></div>AI 분석 중...</div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">🖼️ 사진 아카이브</div>
+          <div class="photo-grid" id="photoGrid"><div class="loading"><div class="spinner"></div>불러오는 중...</div></div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /ipad-shell -->
+
+<script>
+  const API = 'http://localhost:8000';
+  const THEME_KEY = 'dashboard_theme';
+  let ws = null;
+  let mediaRecorder = null;
+  let audioChunks = [];
+  let recordInterval = null;
+  let recordSeconds = 0;
+  let lastRecordedBlob = null;
+  let cameraStream = null;
+  let capturedPhotoFile = null;
+  let capturedPhotoUrl = null;
+
+  function applyTheme(theme) {
+    const resolved = theme === 'light' ? 'light' : 'dark';
+    document.body.dataset.theme = resolved;
+    const sw = document.getElementById('themeSwitch');
+    if (sw) sw.checked = resolved === 'light';
+    const mode = document.getElementById('themeModeText');
+    if (mode) mode.textContent = resolved === 'light' ? '라이트 모드' : '다크 모드';
+  }
+
+  function initTheme() {
+    let saved = null;
+    try { saved = localStorage.getItem(THEME_KEY); } catch {}
+    const preferLight = !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches);
+    applyTheme(saved || (preferLight ? 'light' : 'dark'));
+  }
+
+  function toggleTheme() {
+    const sw = document.getElementById('themeSwitch');
+    const next = sw && sw.checked ? 'light' : 'dark';
+    applyTheme(next);
+    try { localStorage.setItem(THEME_KEY, next); } catch {}
+  }
+
+  // ═══════════════════════════════════════════════
+  //  라우팅
+  // ═══════════════════════════════════════════════
+  document.querySelectorAll('.nav-item[data-page]').forEach(item => {
+    item.addEventListener('click', () => {
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      item.classList.add('active');
+      document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+      document.getElementById('page-' + item.dataset.page).classList.add('active');
+      loadPage(item.dataset.page);
+    });
+  });
+
+  function loadPage(page) {
+    if (page !== 'photos') stopCameraStream();
+    if (page === 'dashboard') loadDashboard();
+    if (page === 'workers')   loadWorkers();
+    if (page === 'zones')     loadZones();
+    if (page === 'progress')  renderProgress();
+    if (page === 'sensors')   loadSensorsLatest();
+    if (page === 'alerts')    loadAlerts();
+    if (page === 'report')    loadReports();
+    if (page === 'photos')    { switchPhotoInputMode('upload'); loadPhotos(); }
+  }
+
+  // ═══════════════════════════════════════════════
+  //  시계
+  // ═══════════════════════════════════════════════
+  function updateClock() {
+    const now = new Date();
+    const pad = n => String(n).padStart(2,'0');
+    document.getElementById('clock').textContent = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    const days = ['일','월','화','수','목','금','토'];
+    document.getElementById('dateDisplay').textContent = `${now.getFullYear()}년 ${now.getMonth()+1}월 ${now.getDate()}일 (${days[now.getDay()]})`;
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  // ═══════════════════════════════════════════════
+  //  API 헬퍼
+  // ═══════════════════════════════════════════════
+  async function apiFetch(path, options = {}) {
+    try {
+      const res = await fetch(API + path, { headers: {'Content-Type':'application/json'}, ...options });
+      return await res.json();
+    } catch { return null; }
+  }
+
+  // ═══════════════════════════════════════════════
+  //  WebSocket
+  // ═══════════════════════════════════════════════
+  function connectWS() {
+    ws = new WebSocket(`ws://localhost:8000/api/sensors/ws`);
+    ws.onopen = () => { const el = document.getElementById('wsStatus'); el.textContent = '● 실시간 연결됨'; el.classList.add('connected'); };
+    ws.onmessage = e => { const m = JSON.parse(e.data); if (m.event === 'sensor') updateSensorDisplay(m.data); };
+    ws.onclose = () => { const el = document.getElementById('wsStatus'); el.textContent = '● 연결 끊김'; el.classList.remove('connected'); setTimeout(connectWS, 3000); };
+  }
+
+  function updateSensorDisplay(data) {
+    const map = {temperature:'temp', humidity:'hum', dust:'dust', gas:'gas'};
+    const limits = {temperature:40, humidity:90, dust:150, gas:50};
+    const key = map[data.type]; if (!key) return;
+    const el = document.getElementById('s-'+key);
+    const st = document.getElementById('s-'+key+'-st');
+    if (el) el.textContent = data.value.toFixed(1);
+    if (data.type === 'temperature') { const t = document.getElementById('kpi-temp'); if (t) t.textContent = data.value.toFixed(1)+'°'; }
+    if (st) { const over = data.value > limits[data.type]; st.textContent = over ? '⚠ 위험' : '정상'; st.className = 'sensor-status ' + (over ? 'bad' : 'ok'); }
+    const log = document.getElementById('sensorLog');
+    if (log) { const e = document.createElement('span'); e.style.color = 'var(--text)'; e.textContent = `[${new Date().toLocaleTimeString()}] ${data.type}: ${data.value}${data.unit}`; log.prepend(e); if (log.children.length > 50) log.lastChild.remove(); }
+  }
+
+  // ═══════════════════════════════════════════════
+  //  공통 유틸
+  // ═══════════════════════════════════════════════
+  function toggleForm(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+  }
+
+  const ZONE_NAMES = {1:'A구역',2:'B구역',3:'C구역',4:'D구역',5:'E구역',6:'F구역'};
+  const ZONE_TASKS = {1:'철근 작업',2:'콘크리트',3:'고소 작업',4:'골조 공사',5:'옥상 작업',6:'외벽 마감'};
+  const ZONE_RISKS = {1:'safe',2:'safe',3:'caution',4:'safe',5:'danger',6:'safe'};
+  const WEATHER_REFRESH_MS = 5 * 60 * 1000;
+
+  function getWeatherVisual(code, isDay) {
+    if (code === 0) return {icon: isDay ? '☀️' : '🌙', desc: '맑음'};
+    if ([1,2,3].includes(code)) return {icon: '⛅', desc: '구름 많음'};
+    if ([45,48].includes(code)) return {icon: '🌫️', desc: '안개'};
+    if ([51,53,55,56,57].includes(code)) return {icon: '🌦️', desc: '이슬비'};
+    if ([61,63,65,66,67,80,81,82].includes(code)) return {icon: '🌧️', desc: '비'};
+    if ([71,73,75,77,85,86].includes(code)) return {icon: '🌨️', desc: '눈'};
+    if ([95,96,99].includes(code)) return {icon: '⛈️', desc: '뇌우'};
+    return {icon: '🌤️', desc: '기상 정보'};
+  }
+
+  function renderWeather(data) {
+    if (!data) return;
+    const visual = getWeatherVisual(data.weather_code, data.is_day);
+    const tempText = typeof data.temperature_c === 'number' ? `${data.temperature_c.toFixed(1)}°C` : '--°C';
+    const humText = typeof data.humidity_pct === 'number' ? `${Math.round(data.humidity_pct)}%` : '--%';
+    const windText = typeof data.wind_speed_ms === 'number' ? `${data.wind_speed_ms.toFixed(1)}m/s` : '--m/s';
+    const sunsetText = data.sunset_time || '--:--';
+
+    document.getElementById('weatherIcon').textContent = visual.icon;
+    document.getElementById('weatherTemp').textContent = tempText;
+    document.getElementById('weatherDesc').textContent = `${visual.desc} · 서울`;
+    document.getElementById('weatherHumidity').textContent = humText;
+    document.getElementById('weatherWind').textContent = windText;
+    document.getElementById('weatherSunset').textContent = sunsetText;
+  }
+
+  async function loadWeather() {
+    const weather = await apiFetch('/api/weather/seoul');
+    if (!weather) return;
+    renderWeather(weather);
+  }
+
+  // ═══════════════════════════════════════════════
+  //  대시보드
+  // ═══════════════════════════════════════════════
+  async function loadDashboard() {
+    loadWeather();
+    const [workers, alerts, sensors] = await Promise.all([apiFetch('/api/workers/'), apiFetch('/api/alerts/'), apiFetch('/api/sensors/latest')]);
+    if (workers) { document.getElementById('kpi-workers').textContent = workers.filter(w=>w.status==='work').length; renderDashZones(workers); }
+    if (alerts)  { document.getElementById('kpi-alerts').textContent = alerts.length; document.getElementById('alertCount').textContent = alerts.length; renderDashAlerts(alerts.slice(0,3)); }
+    if (sensors?.temperature) document.getElementById('kpi-temp').textContent = sensors.temperature.value.toFixed(1)+'°';
+  }
+
+  function renderDashZones(workers) {
+    const counts = {}; workers.forEach(w => { if (w.zone_id) counts[w.zone_id] = (counts[w.zone_id]||0)+1; });
+    document.getElementById('dash-zones').innerHTML = [1,2,3,4,5,6].map(i => `
+      <div class="zone ${ZONE_RISKS[i]}">
+        <div class="zone-name">${ZONE_NAMES[i]}</div>
+        <div class="zone-workers">${counts[i]||0}명</div>
+        <div class="zone-sub">${ZONE_TASKS[i]}</div>
+      </div>`).join('');
+  }
+
+  function renderDashAlerts(alerts) {
+    const el = document.getElementById('dash-alerts');
+    if (!alerts?.length) { el.innerHTML = '<div style="color:var(--muted);font-size:12px;">알림 없음</div>'; return; }
+    el.innerHTML = alerts.map(a => `<div class="alert-item level-${a.level}"><div class="alert-dot"></div><div><div class="alert-text">${a.message}</div><div class="alert-time">${new Date(a.created_at).toLocaleTimeString()} · ${a.source}</div></div></div>`).join('');
+  }
+
+  // ═══════════════════════════════════════════════
+  //  인력 관리
+  // ═══════════════════════════════════════════════
+  async function loadWorkers() {
+    const workers = await apiFetch('/api/workers/');
+    const tbody = document.getElementById('workerTableBody');
+    if (!workers?.length) { tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);text-align:center;padding:20px;">등록된 작업자 없음</td></tr>'; return; }
+    const statusMap = {work:'작업중',rest:'휴식중',absent:'결근'};
+    tbody.innerHTML = workers.map(w => `
+      <tr>
+        <td><div class="worker-name"><div class="mini-avatar">${w.name[0]}</div><div><div>${w.name}</div><div style="font-size:10px;color:var(--muted)">${w.role||'—'}</div></div></div></td>
+        <td style="color:var(--muted)">${w.phone||'—'}</td>
+        <td>
+          <select onchange="updateWorkerZone(${w.id},this.value)" style="background:var(--bg);border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:3px 6px;font-size:11px;min-width:88px;">
+            <option value="" ${!w.zone_id?'selected':''}>미배정</option>
+            ${[1,2,3,4,5,6].map(i => `<option value="${i}" ${w.zone_id===i?'selected':''}>${ZONE_NAMES[i]}</option>`).join('')}
+          </select>
+        </td>
+        <td><span class="status-tag ${w.status}">${statusMap[w.status]||w.status}</span></td>
+        <td>
+          <div style="display:flex;align-items:center; justify-content: space-between;">
+            <select onchange="updateWorkerStatus(${w.id},this.value)" style="background:var(--bg);border:1px solid var(--border);color:var(--muted);border-radius:4px;padding:3px 6px;font-size:11px;">
+              <option value="work" ${w.status==='work'?'selected':''}>작업중</option>
+              <option value="rest" ${w.status==='rest'?'selected':''}>휴식중</option>
+              <option value="absent" ${w.status==='absent'?'selected':''}>결근</option>
+            </select>
+            <button class="btn-danger-xs" onclick="deleteWorker(${w.id})">삭제</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  async function updateWorkerZone(id, zoneId) {
+    const zone_id = zoneId ? parseInt(zoneId, 10) : null;
+    await apiFetch(`/api/workers/${id}`, {method:'PATCH', body:JSON.stringify({zone_id})});
+    loadWorkers();
+  }
+  async function updateWorkerStatus(id, status) { await apiFetch(`/api/workers/${id}`, {method:'PATCH', body:JSON.stringify({status})}); loadWorkers(); }
+  async function deleteWorker(id) {
+    if (!confirm('작업자를 삭제하시겠습니까?')) return;
+    await apiFetch(`/api/workers/${id}`, {method:'DELETE'});
+    loadWorkers();
+  }
+  async function submitAddWorker() {
+    const data = {name:document.getElementById('wName').value, role:document.getElementById('wRole').value, phone:document.getElementById('wPhone').value, zone_id:parseInt(document.getElementById('wZone').value)||null};
+    if (!data.name) return alert('이름을 입력하세요');
+    await apiFetch('/api/workers/', {method:'POST', body:JSON.stringify(data)});
+    toggleForm('addWorkerForm'); loadWorkers();
+  }
+
+  // ═══════════════════════════════════════════════
+  //  구역 현황
+  // ═══════════════════════════════════════════════
+  async function loadZones() {
+    const workers = await apiFetch('/api/workers/');
+    const counts = {}; workers?.forEach(w => { if (w.zone_id) counts[w.zone_id] = (counts[w.zone_id]||0)+1; });
+    document.getElementById('fullZoneGrid').innerHTML = [1,2,3,4,5,6].map(i => `
+      <div class="zone ${ZONE_RISKS[i]}" style="padding:16px;">
+        <div class="zone-name">${ZONE_NAMES[i]}</div>
+        <div class="zone-workers" style="font-size:28px;margin:8px 0;">${counts[i]||0}명</div>
+        <div class="zone-sub">${ZONE_TASKS[i]}</div>
+      </div>`).join('');
+  }
+
+  // ═══════════════════════════════════════════════
+  //  공정 관리
+  // ═══════════════════════════════════════════════
+  function renderProgress() {
+    const tasks = [{name:'토목 공사',pct:100,color:'var(--safe)'},{name:'골조 공사',pct:78,color:'var(--safe)'},{name:'외장 공사',pct:52,color:'var(--warning)'},{name:'설비 공사',pct:44,color:'var(--warning)'},{name:'전기 공사',pct:61,color:'var(--blue)'},{name:'내부 마감',pct:28,color:'var(--danger)'}];
+    document.getElementById('progressList').innerHTML = tasks.map(t => `<div class="progress-item"><div class="progress-header"><span class="progress-name">${t.name}</span><span class="progress-pct">${t.pct}%</span></div><div class="progress-track"><div class="progress-fill" style="width:${t.pct}%;background:${t.color};"></div></div></div>`).join('');
+  }
+
+  // ═══════════════════════════════════════════════
+  //  센서
+  // ═══════════════════════════════════════════════
+  async function loadSensorsLatest() {
+    const data = await apiFetch('/api/sensors/latest'); if (!data) return;
+    const map = {temperature:'temp',humidity:'hum',dust:'dust',gas:'gas'};
+    Object.entries(map).forEach(([type,key]) => { const item = data[type]; if (item) { const el = document.getElementById('s-'+key); if (el) el.textContent = item.value.toFixed(1); }});
+  }
+
+  // ═══════════════════════════════════════════════
+  //  알림
+  // ═══════════════════════════════════════════════
+  async function loadAlerts() {
+    const alerts = await apiFetch('/api/alerts/');
+    document.getElementById('alertCount').textContent = alerts?.length || 0;
+    const el = document.getElementById('fullAlertList');
+    if (!alerts?.length) { el.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">미처리 알림 없음 ✅</div>'; return; }
+    el.innerHTML = alerts.map(a => `<div class="alert-item level-${a.level}" id="alert-${a.id}"><div class="alert-dot"></div><div style="flex:1;"><div class="alert-text">${a.message}</div><div class="alert-time">${new Date(a.created_at).toLocaleString()} · ${a.source}</div></div><button class="alert-resolve-btn" onclick="resolveAlert(${a.id})">처리완료</button></div>`).join('');
+  }
+
+  async function resolveAlert(id) { await apiFetch(`/api/alerts/${id}/resolve`, {method:'PATCH'}); loadAlerts(); }
+  async function submitAddAlert() {
+    const data = {level:document.getElementById('aLevel').value, message:document.getElementById('aMessage').value, source:document.getElementById('aSource').value||'수동 입력'};
+    if (!data.message) return alert('내용을 입력하세요');
+    await apiFetch('/api/alerts/', {method:'POST', body:JSON.stringify(data)});
+    toggleForm('addAlertForm'); loadAlerts();
+  }
+
+  // ═══════════════════════════════════════════════
+  //  일일 보고서 — 음성 녹음 + STT
+  // ═══════════════════════════════════════════════
+  function toggleRecording() {
+    if (mediaRecorder && mediaRecorder.state === 'recording') {
+      stopRecording();
+    } else {
+      startRecording();
+    }
+  }
+
+  async function startRecording() {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({audio: true});
+      audioChunks = [];
+      mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        lastRecordedBlob = new Blob(audioChunks, {type: 'audio/webm'});
+        document.getElementById('recordStatus').textContent = '녹음 완료. 저장 버튼을 눌러 STT 변환 후 저장하세요.';
+        document.getElementById('recordActions').style.display = 'flex';
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mediaRecorder.start();
+      recordSeconds = 0;
+      document.getElementById('recordBtn').classList.add('recording');
+      document.getElementById('recordBtn').textContent = '⏹️';
+      document.getElementById('recordStatus').textContent = '녹음 중...';
+      recordInterval = setInterval(() => {
+        recordSeconds++;
+        const m = String(Math.floor(recordSeconds/60)).padStart(2,'0');
+        const s = String(recordSeconds%60).padStart(2,'0');
+        document.getElementById('recordTimer').textContent = `${m}:${s}`;
+      }, 1000);
+    } catch(e) {
+      alert('마이크 권한이 필요합니다.');
+    }
+  }
+
+  function stopRecording() {
+    if (mediaRecorder) mediaRecorder.stop();
+    clearInterval(recordInterval);
+    document.getElementById('recordBtn').classList.remove('recording');
+    document.getElementById('recordBtn').textContent = '🎙️';
+  }
+
+  function resetRecorder() {
+    lastRecordedBlob = null; audioChunks = []; recordSeconds = 0;
+    document.getElementById('recordTimer').textContent = '00:00';
+    document.getElementById('recordStatus').textContent = '버튼을 눌러 녹음 시작';
+    document.getElementById('recordActions').style.display = 'none';
+    document.getElementById('sttResult').style.display = 'none';
+  }
+
+  async function saveReport() {
+    if (!lastRecordedBlob) return alert('녹음된 음성이 없습니다');
+    document.getElementById('recordStatus').textContent = 'STT 변환 중...';
+    const formData = new FormData();
+    formData.append('file', lastRecordedBlob, 'report.webm');
+    formData.append('author_name', '김현수 소장');
+    try {
+      const res = await fetch(`${API}/api/reports/`, {method:'POST', body:formData});
+      const data = await res.json();
+      document.getElementById('sttResult').style.display = 'block';
+      document.getElementById('sttResult').textContent = data.text_content || '변환 결과 없음';
+      document.getElementById('recordStatus').textContent = '저장 완료!';
+      loadReports();
+    } catch(e) {
+      document.getElementById('recordStatus').textContent = '저장 실패: ' + e.message;
+    }
+  }
+
+  async function saveManualReport() {
+    const text = document.getElementById('manualReport').value.trim();
+    if (!text) return alert('내용을 입력하세요');
+    const formData = new FormData();
+    formData.append('text_content', text);
+    formData.append('author_name', '김현수 소장');
+    await fetch(`${API}/api/reports/text`, {method:'POST', body:formData});
+    document.getElementById('manualReport').value = '';
+    loadReports();
+  }
+
+  async function loadReports() {
+    const reports = await apiFetch('/api/reports/');
+    const el = document.getElementById('reportList');
+    if (!reports?.length) { el.innerHTML = '<div style="color:var(--muted);font-size:12px;text-align:center;padding:20px;">저장된 보고서 없음</div>'; return; }
+    el.innerHTML = reports.map(r => `
+      <div class="report-item" onclick="toggleReportDetail(this, ${r.id})">
+        <div class="report-date">${r.date}</div>
+        <div class="report-author">작성자: ${r.author_name}</div>
+        <div class="report-preview">${r.text_content||'내용 없음'}</div>
+        <div class="report-detail" style="display:none;">${r.text_content||'내용 없음'}</div>
+      </div>`).join('');
+  }
+
+  function toggleReportDetail(el, id) {
+    const detail = el.querySelector('.report-detail');
+    const preview = el.querySelector('.report-preview');
+    if (detail.style.display === 'none') { detail.style.display = 'block'; preview.style.display = 'none'; }
+    else { detail.style.display = 'none'; preview.style.display = '-webkit-box'; }
+  }
+
+  // ═══════════════════════════════════════════════
+  //  현장 사진 — 업로드 + Claude Vision 분석
+  // ═══════════════════════════════════════════════
+  function switchPhotoInputMode(mode) {
+    const isCamera = mode === 'camera';
+    document.getElementById('photoModeUploadBtn').classList.toggle('active', !isCamera);
+    document.getElementById('photoModeCameraBtn').classList.toggle('active', isCamera);
+    document.getElementById('photoUploadSection').style.display = isCamera ? 'none' : 'block';
+    document.getElementById('photoCameraSection').style.display = isCamera ? 'block' : 'none';
+    if (isCamera) startCamera();
+    else {
+      stopCameraStream();
+      resetCameraPreview();
+    }
+  }
+
+  async function startCamera() {
+    const status = document.getElementById('cameraStatus');
+    if (!navigator.mediaDevices?.getUserMedia) {
+      status.textContent = '이 브라우저는 카메라 촬영을 지원하지 않습니다.';
+      return;
+    }
+    if (cameraStream) return;
+    status.textContent = '카메라를 실행 중입니다...';
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({
+        video: {facingMode: {ideal: 'environment'}},
+        audio: false
+      });
+      const video = document.getElementById('cameraPreview');
+      video.srcObject = cameraStream;
+      await video.play();
+      resetCameraPreview();
+      status.textContent = '촬영 버튼으로 사진을 찍고 촬영본 저장을 누르세요.';
+    } catch (e) {
+      status.textContent = '카메라 실행에 실패했습니다. 권한 설정을 확인하세요.';
+      console.error('카메라 실행 실패:', e);
+    }
+  }
+
+  function stopCameraStream() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream = null;
+    }
+    const video = document.getElementById('cameraPreview');
+    if (video) video.srcObject = null;
+  }
+
+  function resetCameraPreview() {
+    if (capturedPhotoUrl) {
+      URL.revokeObjectURL(capturedPhotoUrl);
+      capturedPhotoUrl = null;
+    }
+    capturedPhotoFile = null;
+    const video = document.getElementById('cameraPreview');
+    const preview = document.getElementById('capturedPhotoPreview');
+    const captureBtn = document.getElementById('cameraCaptureBtn');
+    const retakeBtn = document.getElementById('cameraRetakeBtn');
+    const saveBtn = document.getElementById('cameraSaveBtn');
+    if (video) video.style.display = 'block';
+    if (preview) { preview.src = ''; preview.style.display = 'none'; }
+    if (captureBtn) captureBtn.style.display = 'inline-block';
+    if (retakeBtn) retakeBtn.style.display = 'none';
+    if (saveBtn) saveBtn.style.display = 'none';
+  }
+
+  async function capturePhoto() {
+    const video = document.getElementById('cameraPreview');
+    const canvas = document.getElementById('cameraCanvas');
+    const status = document.getElementById('cameraStatus');
+    if (!cameraStream || !video.videoWidth) {
+      status.textContent = '카메라 준비가 완료되지 않았습니다.';
+      return;
+    }
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.92));
+    if (!blob) {
+      status.textContent = '사진 촬영에 실패했습니다.';
+      return;
+    }
+
+    capturedPhotoFile = new File([blob], `camera_${Date.now()}.jpg`, {type: 'image/jpeg'});
+    if (capturedPhotoUrl) URL.revokeObjectURL(capturedPhotoUrl);
+    capturedPhotoUrl = URL.createObjectURL(blob);
+
+    const preview = document.getElementById('capturedPhotoPreview');
+    preview.src = capturedPhotoUrl;
+    preview.style.display = 'block';
+    video.style.display = 'none';
+    document.getElementById('cameraCaptureBtn').style.display = 'none';
+    document.getElementById('cameraRetakeBtn').style.display = 'inline-block';
+    document.getElementById('cameraSaveBtn').style.display = 'inline-block';
+    status.textContent = '촬영 완료. 촬영본 저장을 누르면 DB에 저장됩니다.';
+  }
+
+  function retakeCapturedPhoto() {
+    resetCameraPreview();
+    document.getElementById('cameraStatus').textContent = '다시 촬영할 수 있습니다.';
+  }
+
+  async function uploadCapturedPhoto() {
+    if (!capturedPhotoFile) {
+      document.getElementById('cameraStatus').textContent = '먼저 촬영을 진행하세요.';
+      return;
+    }
+    const ok = await uploadPhoto(capturedPhotoFile);
+    if (!ok) return;
+    document.getElementById('cameraStatus').textContent = '촬영본 저장 완료.';
+    await loadPhotos();
+    resetCameraPreview();
+  }
+
+  async function handlePhotoUpload(event) {
+    const files = event.target.files;
+    if (!files?.length) return;
+    for (const file of files) if (file.type.startsWith('image/')) await uploadPhoto(file);
+    event.target.value = '';
+    loadPhotos();
+  }
+
+  async function handlePhotoDrop(event) {
+    event.preventDefault();
+    document.getElementById('uploadZone').classList.remove('dragover');
+    const files = event.dataTransfer.files;
+    if (!files?.length) return;
+    for (const file of files) if (file.type.startsWith('image/')) await uploadPhoto(file);
+    loadPhotos();
+  }
+
+  async function uploadPhoto(file) {
+    const prog = document.getElementById('uploadProgress');
+    prog.style.display = 'flex';
+    const formData = new FormData();
+    formData.append('file', file);
+    const zoneId = document.getElementById('photoZone').value;
+    if (zoneId) formData.append('zone_id', zoneId);
+    try {
+      const res = await fetch(`${API}/api/photos/`, {method:'POST', body:formData});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return true;
+    } catch(e) {
+      console.error('업로드 실패:', e);
+      return false;
+    } finally {
+      prog.style.display = 'none';
+    }
+  }
+
+  async function loadPhotos() {
+    const photos = await apiFetch('/api/photos/');
+    const el = document.getElementById('photoGrid');
+    if (!photos?.length) { el.innerHTML = '<div style="color:var(--muted);font-size:12px;">업로드된 사진 없음</div>'; return; }
+    el.innerHTML = photos.map(p => `
+      <div class="photo-card ${p.risk_detected ? 'risk' : ''}">
+        <div class="photo-thumb">
+          <img src="${API}/api/photos/file/${p.id}" alt="현장사진" onerror="this.parentElement.textContent='🖼️'"/>
+        </div>
+        <div class="photo-info">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+            <span style="font-size:10px;color:var(--muted);">${ZONE_NAMES[p.zone_id]||'구역 미지정'}</span>
+            <span class="photo-risk-badge ${p.risk_detected ? 'risk' : 'safe'}">${p.risk_detected ? '⚠ 위험' : '✓ 정상'}</span>
+          </div>
+          <div class="photo-ai">${p.ai_result || 'AI 분석 결과 없음'}</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px;">${new Date(p.taken_at).toLocaleString()}</div>
+        </div>
+      </div>`).join('');
+  }
+
+  // ═══════════════════════════════════════════════
+  //  초기 실행
+  // ═══════════════════════════════════════════════
+  initTheme();
+  loadDashboard();
+  setInterval(loadWeather, WEATHER_REFRESH_MS);
+  connectWS();
+</script>
+</body>
+</html>
