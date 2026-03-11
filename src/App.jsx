@@ -498,7 +498,7 @@ export default function App() {
           translated_text: translatedText.trim(),
           source_language: sourceLanguage,
           target_language: targetLanguage,
-          author_name: '구이일',
+          author_name: '구이일짱',
         },
       });
       await loadReports();
