@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=1024"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
   <title>건설현장 관리자 대시보드</title>
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
   <style>
@@ -20,7 +20,7 @@
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;justify-content:center;padding:20px;}
-    .ipad-shell{width:1024px;min-height:768px;background:var(--surface);border-radius:18px;border:2px solid var(--border);overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.7);animation:fadeUp .5s ease both;}
+    .ipad-shell{width:min(1280px,calc(100vw - 64px));min-height:min(800px,calc(100vh - 48px));background:var(--surface);border-radius:18px;border:2px solid var(--border);overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,.7);animation:fadeUp .5s ease both;}
     body[data-theme="light"] .ipad-shell{box-shadow:0 24px 64px rgba(15,23,42,.2);}
     @keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
 
@@ -238,6 +238,30 @@
       .photo-modal-side{max-height:45vh;}
     }
 
+    @media (max-width:1180px){
+      body{padding:0;}
+      .ipad-shell{width:100vw;min-height:100vh;border-radius:0;border:none;box-shadow:none;}
+      .main{min-height:calc(100vh - 62px);}
+    }
+
+    @media (max-width:900px){
+      .topbar{padding:12px 14px;gap:12px;flex-wrap:wrap;}
+      .topbar-left,.topbar-right{width:100%;justify-content:space-between;}
+      .main{grid-template-columns:1fr;}
+      .sidebar{border-right:none;border-bottom:1px solid var(--border);padding:12px 0;}
+      .sidebar-footer{margin-top:0;}
+      .content{padding:14px;}
+      .kpi-grid{grid-template-columns:repeat(2,1fr);}
+      .sensor-grid{grid-template-columns:repeat(2,1fr);}
+      .weather-strip{flex-wrap:wrap;gap:10px;}
+      .worker-table{display:block;overflow-x:auto;}
+      .photo-grid{grid-template-columns:1fr;}
+      .form-grid{grid-template-columns:1fr;}
+      .zone-grid{grid-template-columns:repeat(2,1fr);}
+      .photo-modal-dialog{grid-template-columns:1fr;}
+      .photo-modal-side{max-height:45vh;}
+    }
+
     /* UPLOAD ZONE */
     .upload-zone{border:2px dashed var(--border);border-radius:12px;padding:30px;text-align:center;cursor:pointer;transition:border-color .2s;}
     .upload-zone:hover,.upload-zone.dragover{border-color:var(--accent);}
@@ -278,6 +302,8 @@
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
+
+
 
 
 
