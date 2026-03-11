@@ -5,6 +5,7 @@ import { LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS,
 import { formatClockDisplay, formatDateDisplay, formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
 import { AlertsPage, DashboardPage, PhotosPage, ProgressPage, ReportPage, SensorsPage, WorkersPage, ZonesPage } from './components/pages';
+import { createAlert, createReport, createWorker, fetchAlerts, fetchLatestSensors, fetchPhotos, fetchReports, fetchWeather, fetchWorkers, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 export default function App() {
   const apiBase = useMemo(() => getApiBase(), []);
@@ -135,42 +136,25 @@ export default function App() {
     };
   }, [wsBase]);
 
-  async function apiRequest(path, options = {}) {
-    const { method = 'GET', body, headers = {} } = options;
-    const requestOptions = { method, headers: { ...headers } };
-    if (body instanceof FormData) {
-      requestOptions.body = body;
-    } else if (body !== undefined) {
-      requestOptions.headers['Content-Type'] = 'application/json';
-      requestOptions.body = JSON.stringify(body);
-    }
-    const response = await fetch(`${apiBase}${path}`, requestOptions);
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(errorText || `${response.status}`);
-    }
-    if (response.status === 204) return null;
-    return response.json();
-  }
 
   async function loadWeather() {
     try {
-      const data = await apiRequest('/api/weather/seoul');
+      const data = await fetchWeather(apiBase);
       setWeather(data);
     } catch (error) {
       setMessage(`날씨 정보를 불러오지 못했습니다: ${error.message}`);
     }
   }
 
-  async function loadWorkers() { const data = await apiRequest('/api/workers/'); setWorkers(Array.isArray(data) ? data : []); }
-  async function loadAlerts() { const data = await apiRequest('/api/alerts/'); setAlerts(Array.isArray(data) ? data : []); }
-  async function loadSensors() { const data = await apiRequest('/api/sensors/latest'); setSensors(data || { temperature: null, humidity: null, dust: null, gas: null }); }
-  async function loadReports() { const data = await apiRequest('/api/reports/'); setReports(Array.isArray(data) ? data : []); }
+  async function loadWorkers() { const data = await fetchWorkers(apiBase); setWorkers(Array.isArray(data) ? data : []); }
+  async function loadAlerts() { const data = await fetchAlerts(apiBase); setAlerts(Array.isArray(data) ? data : []); }
+  async function loadSensors() { const data = await fetchLatestSensors(apiBase); setSensors(data || { temperature: null, humidity: null, dust: null, gas: null }); }
+  async function loadReports() { const data = await fetchReports(apiBase); setReports(Array.isArray(data) ? data : []); }
   async function loadPhotos() {
-    const query = photoZone ? `?zone_id=${photoZone}` : '';
-    const data = await apiRequest(`/api/photos/${query}`);
+    const data = await fetchPhotos(apiBase, photoZone);
     setPhotos(Array.isArray(data) ? data : []);
   }
+
 
   async function loadDashboard() { await Promise.all([loadWeather(), loadWorkers(), loadAlerts(), loadSensors()]); }
 
@@ -216,14 +200,11 @@ export default function App() {
 
       try {
         setPhotoAnalysisLoading(true);
-        const data = await apiRequest('/api/translate', {
-          method: 'POST',
-          body: {
+        const data = await translateText(apiBase, {
             text: selectedPhoto.ai_result,
             source_language: 'en',
             target_language: 'ko',
-          },
-        });
+          });
 
         if (!cancelled) {
           setPhotoAnalysisKo((prev) => ({
@@ -255,15 +236,12 @@ export default function App() {
       return;
     }
     try {
-      await apiRequest('/api/workers/', {
-        method: 'POST',
-        body: {
-          name: newWorker.name.trim(),
-          role: newWorker.role.trim() || null,
-          phone: newWorker.phone.trim() || null,
-          zone_id: newWorker.zone_id ? Number(newWorker.zone_id) : null,
-          status: 'work',
-        },
+      await createWorker(apiBase, {
+        name: newWorker.name.trim(),
+        role: newWorker.role.trim() || null,
+        phone: newWorker.phone.trim() || null,
+        zone_id: newWorker.zone_id ? Number(newWorker.zone_id) : null,
+        status: 'work',
       });
       setNewWorker({ name: '', role: '', phone: '', zone_id: '' });
       setShowWorkerForm(false);
@@ -276,7 +254,7 @@ export default function App() {
 
   async function handleUpdateWorkerStatus(workerId, status) {
     try {
-      await apiRequest(`/api/workers/${workerId}`, { method: 'PATCH', body: { status } });
+      await updateWorkerStatus(apiBase, workerId, status);
       await loadWorkers();
       setMessage('작업자 상태를 변경했습니다.');
     } catch (error) {
@@ -287,7 +265,7 @@ export default function App() {
   async function handleDeleteWorker(workerId) {
     if (!window.confirm('이 작업자를 삭제하시겠습니까?')) return;
     try {
-      await apiRequest(`/api/workers/${workerId}`, { method: 'DELETE' });
+      await removeWorker(apiBase, workerId);
       await loadWorkers();
       setMessage('작업자를 삭제했습니다.');
     } catch (error) {
@@ -301,13 +279,10 @@ export default function App() {
       return;
     }
     try {
-      await apiRequest('/api/alerts/', {
-        method: 'POST',
-        body: {
-          level: newAlert.level,
-          source: newAlert.source.trim() || '수동 입력',
-          message: newAlert.message.trim(),
-        },
+      await createAlert(apiBase, {
+        level: newAlert.level,
+        source: newAlert.source.trim() || '?? ??',
+        message: newAlert.message.trim(),
       });
       setNewAlert({ level: 'high', source: '', message: '' });
       setShowAlertForm(false);
@@ -320,7 +295,7 @@ export default function App() {
 
   async function handleResolveAlert(alertId) {
     try {
-      await apiRequest(`/api/alerts/${alertId}/resolve`, { method: 'PATCH' });
+      await resolveAlert(apiBase, alertId);
       await loadAlerts();
       setMessage('알림을 처리 완료했습니다.');
     } catch (error) {
@@ -341,10 +316,7 @@ export default function App() {
     }
     try {
       setTranslating(true);
-      const data = await apiRequest('/api/translate', {
-        method: 'POST',
-        body: { text, source_language: sourceLanguage, target_language: targetLanguage },
-      });
+      const data = await translateText(apiBase, { text, source_language: sourceLanguage, target_language: targetLanguage });
       setTranslatedText(data.translated_text || '');
       setMessage(`${targetMeta.label} 번역이 완료되었습니다.`);
     } catch (error) {
@@ -388,15 +360,12 @@ export default function App() {
     }
     try {
       setSavingReport(true);
-      await apiRequest('/api/reports/', {
-        method: 'POST',
-        body: {
-          text_content: text,
-          translated_text: translatedText.trim(),
-          source_language: sourceLanguage,
-          target_language: targetLanguage,
-          author_name: '구이일짱',
-        },
+      await createReport(apiBase, {
+        text_content: text,
+        translated_text: translatedText.trim(),
+        source_language: sourceLanguage,
+        target_language: targetLanguage,
+        author_name: '????',
       });
       await loadReports();
       setMessage('전달 기록을 저장했습니다.');
@@ -410,7 +379,7 @@ export default function App() {
   async function handleDeleteReport(reportId) {
     if (!window.confirm('이 전달 기록을 삭제하시겠습니까?')) return;
     try {
-      await apiRequest(`/api/reports/${reportId}`, { method: 'DELETE' });
+      await removeReport(apiBase, reportId);
       await loadReports();
       setMessage('전달 기록을 삭제했습니다.');
     } catch (error) {
@@ -424,10 +393,7 @@ export default function App() {
     try {
       setUploadingPhotos(true);
       for (const file of files) {
-        const formData = new FormData();
-        formData.append('file', file);
-        if (photoZone) formData.append('zone_id', photoZone);
-        await apiRequest('/api/photos/', { method: 'POST', body: formData });
+        await uploadPhoto(apiBase, file, photoZone);
       }
       await loadPhotos();
       setMessage('현장 사진 업로드를 완료했습니다.');
@@ -442,7 +408,7 @@ export default function App() {
   async function handleDeletePhoto(photoId) {
     if (!window.confirm('이 사진을 삭제하시겠습니까?')) return;
     try {
-      await apiRequest(`/api/photos/${photoId}`, { method: 'DELETE' });
+      await removePhoto(apiBase, photoId);
       await loadPhotos();
       setMessage('현장 사진을 삭제했습니다.');
     } catch (error) {
