@@ -1,0 +1,21 @@
+﻿<svg xmlns="http://www.w3.org/2000/svg" width="36" height="24" viewBox="0 0 36 24">
+  <rect width="36" height="24" rx="3" fill="#fff"/>
+  <g transform="translate(18 12)">
+    <path d="M0-5.2A5.2 5.2 0 0 1 4.5-2.6A2.6 2.6 0 0 1 0 0A2.6 2.6 0 0 0-4.5 2.6A5.2 5.2 0 0 1 0-5.2Z" fill="#cd2e3a"/>
+    <path d="M0 5.2A5.2 5.2 0 0 1-4.5 2.6A2.6 2.6 0 0 1 0 0A2.6 2.6 0 0 0 4.5-2.6A5.2 5.2 0 0 1 0 5.2Z" fill="#0047a0"/>
+  </g>
+  <g stroke="#111" stroke-width="1.15" stroke-linecap="round">
+    <g transform="translate(8.2 6.6) rotate(-33)">
+      <path d="M-2.4 -1.8H2.4"/><path d="M-2.4 0H2.4"/><path d="M-2.4 1.8H2.4"/>
+    </g>
+    <g transform="translate(27.8 6.6) rotate(33)">
+      <path d="M-2.4 -1.8H2.4"/><path d="M-2.4 0H-0.7M0.7 0H2.4"/><path d="M-2.4 1.8H2.4"/>
+    </g>
+    <g transform="translate(8.2 17.4) rotate(33)">
+      <path d="M-2.4 -1.8H-0.7M0.7 -1.8H2.4"/><path d="M-2.4 0H2.4"/><path d="M-2.4 1.8H-0.7M0.7 1.8H2.4"/>
+    </g>
+    <g transform="translate(27.8 17.4) rotate(-33)">
+      <path d="M-2.4 -1.8H-0.7M0.7 -1.8H2.4"/><path d="M-2.4 0H-0.7M0.7 0H2.4"/><path d="M-2.4 1.8H-0.7M0.7 1.8H2.4"/>
+    </g>
+  </g>
+</svg>
