@@ -127,6 +127,9 @@ export default function App() {
   const [sensorLog, setSensorLog] = useState([]);
   const [reports, setReports] = useState([]);
   const [photos, setPhotos] = useState([]);
+  const [selectedPhoto, setSelectedPhoto] = useState(null);
+  const [photoAnalysisKo, setPhotoAnalysisKo] = useState({});
+  const [photoAnalysisLoading, setPhotoAnalysisLoading] = useState(false);
 
   const [showWorkerForm, setShowWorkerForm] = useState(false);
   const [newWorker, setNewWorker] = useState({ name: '', role: '', phone: '', zone_id: '' });
@@ -306,6 +309,48 @@ export default function App() {
       loadPhotos().catch((error) => setMessage(`현장 사진을 불러오지 못했습니다: ${error.message}`));
     }
   }, [photoZone]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPhotoAnalysisKo() {
+      if (!selectedPhoto?.id || !selectedPhoto.ai_result?.trim()) return;
+      if (photoAnalysisKo[selectedPhoto.id]) return;
+
+      try {
+        setPhotoAnalysisLoading(true);
+        const data = await apiRequest('/api/translate', {
+          method: 'POST',
+          body: {
+            text: selectedPhoto.ai_result,
+            source_language: 'en',
+            target_language: 'ko',
+          },
+        });
+
+        if (!cancelled) {
+          setPhotoAnalysisKo((prev) => ({
+            ...prev,
+            [selectedPhoto.id]: data.translated_text || '한국어 번역 결과가 없습니다.',
+          }));
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setPhotoAnalysisKo((prev) => ({
+            ...prev,
+            [selectedPhoto.id]: `한국어 번역을 불러오지 못했습니다: ${error.message}`,
+          }));
+        }
+      } finally {
+        if (!cancelled) setPhotoAnalysisLoading(false);
+      }
+    }
+
+    loadPhotoAnalysisKo();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPhoto, photoAnalysisKo]);
 
   async function handleCreateWorker() {
     if (!newWorker.name.trim()) {
@@ -670,16 +715,129 @@ export default function App() {
     );
   }
 
-  function renderPhotosPage() {
+  function renderPhotoModal() {
+    if (!selectedPhoto) return null;
+    const zone = getZoneMeta(selectedPhoto.zone_id);
+    const takenAt = selectedPhoto.taken_at
+      ? new Date(selectedPhoto.taken_at).toLocaleString('ko-KR')
+      : '시간 정보 없음';
+    const translatedAnalysis = photoAnalysisKo[selectedPhoto.id];
+
     return (
-      <div className="page active">
-        <div className="section-header"><div className="section-title">현장 사진</div></div>
-        <div className="panel"><div className="panel-title">📤 사진 입력, AI 자동 분석</div><div className="form-group compact-field"><label className="form-label">구역 선택</label><select className="form-select narrow-select" value={photoZone} onChange={(event) => setPhotoZone(event.target.value)}><option value="">전체</option>{ZONES.map((zone) => <option key={zone.id} value={zone.id}>{zone.name}</option>)}</select></div><div className="upload-zone simple-upload-zone"><div className="upload-zone-icon">📸</div><div className="upload-zone-text">클릭하거나 파일을 선택해 업로드하세요.</div><input className="file-input-inline" type="file" accept="image/*" multiple onChange={handlePhotoUpload} /></div>{uploadingPhotos && <div className="loading"><div className="spinner"></div>AI 분석 중...</div>}</div>
-        <div className="panel"><div className="panel-title">🖼️ 사진 아카이브</div><div className="photo-grid">{photos.length === 0 && <div className="table-empty">업로드된 사진이 없습니다.</div>}{photos.map((photo) => { const zone = getZoneMeta(photo.zone_id); return <div className={`photo-card ${photo.risk_detected ? 'risk' : ''}`} key={photo.id}><div className="photo-thumb"><img src={`${apiBase}/api/photos/file/${photo.id}`} alt="현장 사진" /></div><div className="photo-info"><div className="photo-card-top"><span>{zone ? zone.name : '구역 미지정'}</span><span className={`photo-risk-badge ${photo.risk_detected ? 'risk' : 'safe'}`}>{photo.risk_detected ? '위험' : '정상'}</span></div><div className="photo-ai">{photo.ai_result || '분석 결과가 없습니다.'}</div><div className="photo-actions"><button className="photo-delete-btn react-btn-auto" onClick={() => handleDeletePhoto(photo.id)} type="button">삭제</button></div></div></div>; })}</div></div>
+      <div className="photo-modal-overlay" onClick={() => setSelectedPhoto(null)}>
+        <div className="photo-modal-dialog-react" onClick={(event) => event.stopPropagation()}>
+          <div className="photo-modal-media-react">
+            <img src={`${apiBase}/api/photos/file/${selectedPhoto.id}`} alt="현장 사진 상세" />
+          </div>
+          <div className="photo-modal-side-react">
+            <div className="photo-modal-head-react">
+              <div>
+                <div className="section-title">사진 상세 분석</div>
+                <div className="table-sub">{zone ? zone.name : '구역 미지정'} · {takenAt}</div>
+              </div>
+              <button className="photo-modal-close-react react-btn-auto" type="button" onClick={() => setSelectedPhoto(null)}>
+                닫기
+              </button>
+            </div>
+            <div className="photo-modal-badges-react">
+              <span className={`photo-risk-badge ${selectedPhoto.risk_detected ? 'risk' : 'safe'}`}>
+                {selectedPhoto.risk_detected ? '위험' : '정상'}
+              </span>
+              <span className="photo-modal-badge-react">{selectedPhoto.original_name || 'uploaded photo'}</span>
+            </div>
+            <div className="photo-modal-analysis-react">
+              <strong>English</strong>
+              <br />
+              {selectedPhoto.ai_result || '분석 결과가 없습니다.'}
+              <br />
+              <br />
+              <strong>한국어</strong>
+              <br />
+              {photoAnalysisLoading && !translatedAnalysis ? '한국어 번역을 불러오는 중입니다...' : (translatedAnalysis || '한국어 번역 결과가 없습니다.')}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
+  function renderPhotosPage() {
+    return (
+      <div className="page active">
+        <div className="section-header">
+          <div className="section-title">현장 사진</div>
+        </div>
+        <div className="panel">
+          <div className="panel-title">📤 사진 입력, AI 자동 분석</div>
+          <div className="form-group compact-field">
+            <label className="form-label">구역 선택</label>
+            <select className="form-select narrow-select" value={photoZone} onChange={(event) => setPhotoZone(event.target.value)}>
+              <option value="">전체</option>
+              {ZONES.map((zone) => (
+                <option key={zone.id} value={zone.id}>{zone.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="upload-zone simple-upload-zone">
+            <div className="upload-zone-icon">📸</div>
+            <div className="upload-zone-text">클릭하거나 파일을 선택해 업로드하세요.</div>
+            <input className="file-input-inline" type="file" accept="image/*" multiple onChange={handlePhotoUpload} />
+          </div>
+          {uploadingPhotos && <div className="loading"><div className="spinner"></div>AI 분석 중...</div>}
+        </div>
+        <div className="panel">
+          <div className="panel-title">🖼️ 사진 아카이브</div>
+          <div className="photo-grid">
+            {photos.length === 0 && <div className="table-empty">업로드된 사진이 없습니다.</div>}
+            {photos.map((photo) => {
+              const zone = getZoneMeta(photo.zone_id);
+              return (
+                <div
+                  className="photo-card"
+                  key={photo.id}
+                  onClick={() => setSelectedPhoto(photo)}
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault();
+                      setSelectedPhoto(photo);
+                    }
+                  }}
+                >
+                  <div className="photo-thumb">
+                    <img src={`${apiBase}/api/photos/file/${photo.id}`} alt="현장 사진" />
+                  </div>
+                  <div className="photo-info">
+                    <div className="photo-card-top">
+                      <span>{zone ? zone.name : '구역 미지정'}</span>
+                      <span className={`photo-risk-badge ${photo.risk_detected ? 'risk' : 'safe'}`}>
+                        {photo.risk_detected ? '위험' : '정상'}
+                      </span>
+                    </div>
+                    <div className="photo-ai">{photo.ai_result || '분석 결과가 없습니다.'}</div>
+                    <div className="photo-actions">
+                      <button
+                        className="photo-delete-btn react-btn-auto"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleDeletePhoto(photo.id);
+                        }}
+                        type="button"
+                      >
+                        삭제
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        {renderPhotoModal()}
+      </div>
+    );
+  }
   function renderPage() {
     if (activePage === 'dashboard') return renderDashboardPage();
     if (activePage === 'workers') return renderWorkersPage();
@@ -699,6 +857,15 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
+
+
+
+
+
 
 
 
