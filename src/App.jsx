@@ -24,19 +24,19 @@ const PROGRESS_ITEMS = [
 ];
 
 const LANGUAGES = [
-  { code: 'ko', label: '한국어', speech: 'ko-KR', voice: 'ko-KR' },
-  { code: 'en', label: '영어', speech: 'en-US', voice: 'en-US' },
-  { code: 'vi', label: '베트남어', speech: 'vi-VN', voice: 'vi-VN' },
-  { code: 'th', label: '태국어', speech: 'th-TH', voice: 'th-TH' },
-  { code: 'uz', label: '우즈베크어', speech: 'uz-UZ', voice: 'uz-UZ' },
-  { code: 'mn', label: '몽골어', speech: 'mn-MN', voice: 'mn-MN' },
-  { code: 'zh-cn', label: '중국어(간체)', speech: 'zh-CN', voice: 'zh-CN' },
-  { code: 'ja', label: '일본어', speech: 'ja-JP', voice: 'ja-JP' },
-  { code: 'id', label: '인도네시아어', speech: 'id-ID', voice: 'id-ID' },
-  { code: 'tl', label: '필리핀어', speech: 'fil-PH', voice: 'fil-PH' },
-  { code: 'ne', label: '네팔어', speech: 'ne-NP', voice: 'ne-NP' },
-  { code: 'ru', label: '러시아어', speech: 'ru-RU', voice: 'ru-RU' },
-  { code: 'km', label: '크메르어', speech: 'km-KH', voice: 'km-KH' },
+  { code: 'ko', label: '한국어', badge: 'KR', flagPath: '/flags/kr.svg', speech: 'ko-KR', voice: 'ko-KR' },
+  { code: 'en', label: '영어', badge: 'US', flagPath: '/flags/us.svg', speech: 'en-US', voice: 'en-US' },
+  { code: 'vi', label: '베트남어', badge: 'VN', flagPath: '/flags/vn.svg', speech: 'vi-VN', voice: 'vi-VN' },
+  { code: 'th', label: '태국어', badge: 'TH', flagPath: '/flags/th.svg', speech: 'th-TH', voice: 'th-TH' },
+  { code: 'uz', label: '우즈베크어', badge: 'UZ', flagPath: '/flags/uz.svg', speech: 'uz-UZ', voice: 'uz-UZ' },
+  { code: 'mn', label: '몽골어', badge: 'MN', flagPath: '/flags/mn.svg', speech: 'mn-MN', voice: 'mn-MN' },
+  { code: 'zh-cn', label: '중국어(간체)', badge: 'CN', flagPath: '/flags/cn.svg', speech: 'zh-CN', voice: 'zh-CN' },
+  { code: 'ja', label: '일본어', badge: 'JP', flagPath: '/flags/jp.svg', speech: 'ja-JP', voice: 'ja-JP' },
+  { code: 'id', label: '인도네시아어', badge: 'ID', flagPath: '/flags/id.svg', speech: 'id-ID', voice: 'id-ID' },
+  { code: 'tl', label: '필리핀어', badge: 'PH', flagPath: '/flags/ph.svg', speech: 'fil-PH', voice: 'fil-PH' },
+  { code: 'ne', label: '네팔어', badge: 'NP', flagPath: '/flags/np.svg', speech: 'ne-NP', voice: 'ne-NP' },
+  { code: 'ru', label: '러시아어', badge: 'RU', flagPath: '/flags/ru.svg', speech: 'ru-RU', voice: 'ru-RU' },
+  { code: 'km', label: '크메르어', badge: 'KH', flagPath: '/flags/kh.svg', speech: 'km-KH', voice: 'km-KH' },
 ];
 
 const WORKER_STATUS_LABELS = { work: '작업 중', rest: '휴식', absent: '미출근' };
@@ -453,7 +453,7 @@ export default function App() {
           translated_text: translatedText.trim(),
           source_language: sourceLanguage,
           target_language: targetLanguage,
-          author_name: '김현수 소장',
+          author_name: '구이일',
         },
       });
       await loadReports();
@@ -662,10 +662,10 @@ export default function App() {
         <div className="section-header"><div className="section-title">워키토키</div></div>
         <div className="panel">
           <div className="panel-title">📻 음성 번역</div>
-          <div className="form-grid"><div className="form-group"><label className="form-label">말할 언어</label><select className="form-select" value={sourceLanguage} onChange={(event) => setSourceLanguage(event.target.value)}>{LANGUAGES.map((language) => <option key={language.code} value={language.code}>{language.label}</option>)}</select></div><div className="form-group"><label className="form-label">번역 언어</label><select className="form-select" value={targetLanguage} onChange={(event) => setTargetLanguage(event.target.value)}>{LANGUAGES.map((language) => <option key={language.code} value={language.code}>{language.label}</option>)}</select></div></div>
-          <div className="recorder-box recorder-box-spaced"><div className="record-timer">{formatTimer(recordSeconds)}</div><button className={`record-btn ${speech.isListening ? 'recording' : ''}`} onClick={speech.isListening ? speech.stop : speech.start} type="button">🎙️</button><div className="record-status">{speech.isListening ? '음성 인식 중입니다.' : '버튼을 눌러 음성 인식을 시작하세요'}</div><div className="walkie-language-row"><span>말할 언어: {sourceMeta.label}</span><span>번역 언어: {targetMeta.label}</span></div><div className={`stt-result ${sourceText ? 'filled' : ''}`}>{sourceText || '말하면 여기에 텍스트가 표시됩니다...'}</div><div className={`stt-result walkie-translation-box ${translatedText ? 'filled' : ''}`}>{translatedText || '번역 결과가 여기에 표시됩니다...'}</div>{speech.error && <div className="walkie-error">{getSpeechErrorMessage(speech.error)}</div>}<div className="walkie-action-row"><button className="btn-primary react-btn-auto" onClick={handleTranslateWalkie} disabled={translating} type="button">{translating ? '번역 중...' : '번역하기'}</button><button className="btn-sm react-btn-auto" onClick={handlePlayTranslatedText} type="button">음성 재생</button><button className="btn-primary react-btn-auto" onClick={handleSaveWalkie} disabled={savingReport} type="button">{savingReport ? '저장 중...' : '저장'}</button><button className="btn-sm react-btn-auto" onClick={handleResetWalkie} type="button">초기화</button></div></div>
+          <div className="form-grid"><div className="form-group"><label className="form-label">말할 언어</label><div className="language-select-row"><select className="form-select" value={sourceLanguage} onChange={(event) => setSourceLanguage(event.target.value)}>{LANGUAGES.map((language) => <option key={language.code} value={language.code}>{language.label}</option>)}</select><div className="language-flag-badge">{sourceMeta.badge} <img className="language-flag-image" src={sourceMeta.flagPath} alt={`${sourceMeta.label} flag`} /></div></div></div><div className="form-group"><label className="form-label">번역 언어</label><div className="language-select-row"><select className="form-select" value={targetLanguage} onChange={(event) => setTargetLanguage(event.target.value)}>{LANGUAGES.map((language) => <option key={language.code} value={language.code}>{language.label}</option>)}</select><div className="language-flag-badge">{targetMeta.badge} <img className="language-flag-image" src={targetMeta.flagPath} alt={`${targetMeta.label} flag`} /></div></div></div></div>
+          <div className="recorder-box recorder-box-spaced"><div className="record-timer">{formatTimer(recordSeconds)}</div><button className={`record-btn ${speech.isListening ? 'recording' : ''}`} onClick={speech.isListening ? speech.stop : speech.start} type="button">🎙️</button><div className="record-status">{speech.isListening ? '음성 인식 중입니다.' : '버튼을 눌러 음성 인식을 시작하세요'}</div><div className="walkie-language-row"><span><img className="walkie-inline-flag" src={sourceMeta.flagPath} alt={`${sourceMeta.label} flag`} /> 말할 언어: {sourceMeta.label}</span><span><img className="walkie-inline-flag" src={targetMeta.flagPath} alt={`${targetMeta.label} flag`} /> 번역 언어: {targetMeta.label}</span></div><div className={`stt-result ${sourceText ? 'filled' : ''}`}>{sourceText || '말하면 여기에 텍스트가 표시됩니다...'}</div><div className={`stt-result walkie-translation-box ${translatedText ? 'filled' : ''}`}>{translatedText || '번역 결과가 여기에 표시됩니다...'}</div>{speech.error && <div className="walkie-error">{getSpeechErrorMessage(speech.error)}</div>}<div className="walkie-action-row"><button className="btn-primary react-btn-auto" onClick={handleTranslateWalkie} disabled={translating} type="button">{translating ? '번역 중...' : '번역하기'}</button><button className="btn-sm react-btn-auto" onClick={handlePlayTranslatedText} type="button">음성 재생</button><button className="btn-primary react-btn-auto" onClick={handleSaveWalkie} disabled={savingReport} type="button">{savingReport ? '저장 중...' : '저장'}</button><button className="btn-sm react-btn-auto" onClick={handleResetWalkie} type="button">초기화</button></div></div>
         </div>
-        <div className="panel"><div className="panel-title">📋 저장된 전달 기록</div><div className="report-list-wrap">{visibleReports.length === 0 && <div className="table-empty">저장된 전달 기록이 없습니다.</div>}{visibleReports.map((report) => <div className="report-item" key={report.id}><div className="report-header"><div><div className="report-date">{report.date || new Date(report.created_at).toLocaleDateString('ko-KR')}</div><div className="report-author">작성자: {report.author_name || '김현수 소장'}</div></div><button className="report-delete-btn react-btn-auto" onClick={() => handleDeleteReport(report.id)} type="button" aria-label="삭제"><svg viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg></button></div><div className="report-preview">원문: {report.text_content}</div><div className="report-preview">번역: {report.translated_text || '번역 없음'}</div></div>)}</div></div>
+        <div className="panel"><div className="panel-title">📋 저장된 전달 기록</div><div className="report-list-wrap">{visibleReports.length === 0 && <div className="table-empty">저장된 전달 기록이 없습니다.</div>}{visibleReports.map((report) => <div className="report-item" key={report.id}><div className="report-header"><div><div className="report-date">{report.date || new Date(report.created_at).toLocaleDateString('ko-KR')}</div><div className="report-author">작성자: {report.author_name || '구이일'}</div></div><button className="report-delete-btn react-btn-auto" onClick={() => handleDeleteReport(report.id)} type="button" aria-label="삭제"><svg viewBox="0 0 24 24"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="M19 6l-1 14H6L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path></svg></button></div><div className="report-preview">원문: {report.text_content}</div><div className="report-preview">번역: {report.translated_text || '번역 없음'}</div></div>)}</div></div>
       </div>
     );
   }
@@ -695,9 +695,13 @@ export default function App() {
   return (
     <div className="ipad-shell">
       <div className="topbar"><div className="topbar-left"><div className="site-badge"><div className="icon">🏗️</div><div><div className="site-name">한강 스카이타워 현장</div><div className="site-sub">서울 마포구 · 공정률 67% · 현장코드 #LGEDX-2026-92</div></div></div><div className="divider-v"></div><div className="status-pill"><div className="dot"></div>정상 운영 중</div></div><div className="topbar-right"><div className={`ws-status ${wsConnected ? 'connected' : ''}`}>{wsConnected ? '● 서버 연결됨' : '● 서버 연결 중...'}</div><div className="time-display"><div className="time">{clock}</div><div style={{ fontSize: 11, color: 'var(--muted)' }}>{dateText}</div></div></div></div>
-      <div className="main"><div className="sidebar">{NAV_SECTIONS.map((section) => <div className="sidebar-section" key={section.title}><div className="sidebar-label">{section.title}</div>{section.items.map((item) => { const count = item.countKey === 'alerts' ? alerts.length : null; return <div className={`nav-item ${activePage === item.key ? 'active' : ''} ${item.disabled ? 'disabled-nav-item' : ''}`} key={item.key} onClick={() => !item.disabled && setActivePage(item.key)} role="button" tabIndex={item.disabled ? -1 : 0} onKeyDown={(event) => { if (!item.disabled && (event.key === 'Enter' || event.key === ' ')) setActivePage(item.key); }}><span className="nav-icon">{item.icon}</span>{item.label}{count !== null && <span className="nav-count">{count}</span>}</div>; })}</div>)}<div className="sidebar-footer"><div className="user-card"><div className="avatar">김</div><div className="user-info"><div className="name">김현수 소장</div><div className="role">현장 총괄 관리자</div></div></div><div className="theme-card"><div><div className="theme-card-label">테마 모드</div><div className="theme-card-mode">{theme === 'light' ? '라이트 모드' : '다크 모드'}</div></div><label className="theme-switch"><input type="checkbox" checked={theme === 'light'} onChange={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))} aria-label="라이트 모드 전환" /><span className="theme-slider"></span></label></div></div></div><div className="content"><div className="react-message-bar">{message}</div>{renderPage()}</div></div>
+      <div className="main"><div className="sidebar">{NAV_SECTIONS.map((section) => <div className="sidebar-section" key={section.title}><div className="sidebar-label">{section.title}</div>{section.items.map((item) => { const count = item.countKey === 'alerts' ? alerts.length : null; return <div className={`nav-item ${activePage === item.key ? 'active' : ''} ${item.disabled ? 'disabled-nav-item' : ''}`} key={item.key} onClick={() => !item.disabled && setActivePage(item.key)} role="button" tabIndex={item.disabled ? -1 : 0} onKeyDown={(event) => { if (!item.disabled && (event.key === 'Enter' || event.key === ' ')) setActivePage(item.key); }}><span className="nav-icon">{item.icon}</span>{item.label}{count !== null && <span className="nav-count">{count}</span>}</div>; })}</div>)}<div className="sidebar-footer"><div className="user-card"><div className="avatar">구</div><div className="user-info"><div className="name">구이일</div><div className="role">현장 총괄 관리자</div></div></div><div className="theme-card"><div><div className="theme-card-label">테마 모드</div><div className="theme-card-mode">{theme === 'light' ? '라이트 모드' : '다크 모드'}</div></div><label className="theme-switch"><input type="checkbox" checked={theme === 'light'} onChange={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))} aria-label="라이트 모드 전환" /><span className="theme-slider"></span></label></div></div></div><div className="content"><div className="react-message-bar">{message}</div>{renderPage()}</div></div>
     </div>
   );
 }
+
+
+
+
 
 
