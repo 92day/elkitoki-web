@@ -51,7 +51,7 @@ export const NAV_SECTIONS = [
     { key: 'photos', label: '\ud604\uc7a5 \uc0ac\uc9c4', icon: '\ud83d\udcf8' },
   ]},
   { title: '\uc124\uc815', items: [
-    { key: 'settings-alert', label: '\uc54c\ub9bc \uc124\uc815', icon: '\ud83d\udd14', disabled: true },
-    { key: 'settings-env', label: '\ud658\uacbd \uc124\uc815', icon: '\u2699\ufe0f', disabled: true },
+    { key: 'settings-alert', label: '\uc54c\ub9bc \uc124\uc815', icon: '\ud83d\udd14' },
+    { key: 'settings-env', label: '\ud658\uacbd \uc124\uc815', icon: '\u2699\ufe0f' },
   ]},
 ];

@@ -7,7 +7,7 @@ import './App.css';
 import { LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
 import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
-import { AlertsPage, DashboardPage, PhotosPage, ProgressPage, ReportPage, SensorsPage, WorkersPage, ZonesPage } from './components/pages';
+import { AlertSettingsPage, AlertsPage, DashboardPage, EnvironmentSettingsPage, PhotosPage, ProgressPage, ReportPage, SensorsPage, WorkersPage, ZonesPage } from './components/pages';
 import { createAlert, createReport, createWorker, fetchAlerts, fetchLatestSensors, fetchPhotos, fetchReports, fetchWeather, fetchWorkers, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 export default function App() {
@@ -118,6 +118,8 @@ export default function App() {
         if (activePage === 'alerts') await loadAlerts();
         if (activePage === 'report') await loadReports();
         if (activePage === 'photos') await loadPhotos();
+        if (activePage === 'settings-alert') setMessage('\uc54c\ub9bc \uc124\uc815\uc744 \uc870\uc815\ud558\uc138\uc694.');
+        if (activePage === 'settings-env') setMessage('\ud658\uacbd \uc124\uc815\uc744 \uc870\uc815\ud558\uc138\uc694.');
       } catch (error) {
         setMessage(`데이터를 불러오지 못했습니다: ${error.message}`);
       }
@@ -461,6 +463,14 @@ export default function App() {
 
   
 
+  function renderAlertSettingsPage() {
+    return <AlertSettingsPage onSave={setMessage} />;
+  }
+
+  function renderEnvironmentSettingsPage() {
+    return <EnvironmentSettingsPage languages={LANGUAGES} onSave={setMessage} />;
+  }
+
   function renderPhotosPage() {
     return (
       <PhotosPage
@@ -489,6 +499,8 @@ export default function App() {
     if (activePage === 'alerts') return renderAlertsPage();
     if (activePage === 'report') return renderReportPage();
     if (activePage === 'photos') return renderPhotosPage();
+    if (activePage === 'settings-alert') return renderAlertSettingsPage();
+    if (activePage === 'settings-env') return renderEnvironmentSettingsPage();
     return <div className="page active"><div className="section-title">준비 중</div></div>;
   }
 
