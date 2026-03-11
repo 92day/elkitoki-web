@@ -1,8 +1,11 @@
 ﻿import { useEffect, useMemo, useState } from 'react';
 import useSpeechRecognition from './hooks/useSpeechRecognition';
+import useThemePreference from './hooks/useThemePreference';
+import useClockDisplay from './hooks/useClockDisplay';
+import useSensorStream from './hooks/useSensorStream';
 import './App.css';
 import { LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
-import { formatClockDisplay, formatDateDisplay, formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
+import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
 import { AlertsPage, DashboardPage, PhotosPage, ProgressPage, ReportPage, SensorsPage, WorkersPage, ZonesPage } from './components/pages';
 import { createAlert, createReport, createWorker, fetchAlerts, fetchLatestSensors, fetchPhotos, fetchReports, fetchWeather, fetchWorkers, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
@@ -12,10 +15,8 @@ export default function App() {
   const wsBase = useMemo(() => apiBase.replace(/^http/, 'ws'), [apiBase]);
 
   const [activePage, setActivePage] = useState('dashboard');
-  const [theme, setTheme] = useState('light');
-  const [clock, setClock] = useState('--:--:--');
-  const [dateText, setDateText] = useState('로딩 중');
-  const [wsConnected, setWsConnected] = useState(false);
+  const [theme, setTheme] = useThemePreference(THEME_KEY);
+  const { clock, dateText } = useClockDisplay();
   const [message, setMessage] = useState('대시보드를 불러오는 중입니다.');
 
   const [weather, setWeather] = useState(null);
@@ -48,6 +49,7 @@ export default function App() {
   const sourceMeta = LANGUAGES.find((item) => item.code === sourceLanguage) || LANGUAGES[0];
   const targetMeta = LANGUAGES.find((item) => item.code === targetLanguage) || LANGUAGES[0];
   const speech = useSpeechRecognition(sourceMeta.speech);
+  const wsConnected = useSensorStream(wsBase, setSensors, setSensorLog);
 
   const visibleReports = reports.filter((report) => !isLegacyPlaceholder(report));
   const activeWorkers = workers.filter((worker) => worker.status === 'work');
@@ -56,26 +58,7 @@ export default function App() {
     return accumulator;
   }, {});
 
-  useEffect(() => {
-    const savedTheme = window.localStorage.getItem(THEME_KEY);
-    setTheme(savedTheme === 'dark' ? 'dark' : 'light');
-  }, []);
 
-  useEffect(() => {
-    document.body.dataset.theme = theme;
-    window.localStorage.setItem(THEME_KEY, theme);
-  }, [theme]);
-
-  useEffect(() => {
-    const tick = () => {
-      const now = new Date();
-      setClock(formatClockDisplay(now));
-      setDateText(formatDateDisplay(now));
-    };
-    tick();
-    const timerId = window.setInterval(tick, 1000);
-    return () => window.clearInterval(timerId);
-  }, []);
 
   useEffect(() => {
     if (speech.transcript) setSourceText(speech.transcript);
@@ -98,43 +81,6 @@ export default function App() {
     };
   }, [speech.isListening]);
 
-  useEffect(() => {
-    let socket;
-    let reconnectTimer;
-    let cancelled = false;
-
-    const connect = () => {
-      if (cancelled) return;
-      socket = new WebSocket(`${wsBase}/api/sensors/ws`);
-      socket.onopen = () => setWsConnected(true);
-      socket.onmessage = (event) => {
-        try {
-          const payload = JSON.parse(event.data);
-          if (payload.event === 'sensor' && payload.data) {
-            const nextSensor = payload.data;
-            setSensors((prev) => ({ ...prev, [nextSensor.type]: { value: nextSensor.value, unit: nextSensor.unit || '' } }));
-            setSensorLog((prev) => [
-              { id: `${Date.now()}-${nextSensor.type}`, text: `[${new Date().toLocaleTimeString('ko-KR', { hour12: false })}] ${nextSensor.type}: ${nextSensor.value}${nextSensor.unit || ''}` },
-              ...prev,
-            ].slice(0, 40));
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      };
-      socket.onclose = () => {
-        setWsConnected(false);
-        if (!cancelled) reconnectTimer = window.setTimeout(connect, 3000);
-      };
-    };
-
-    connect();
-    return () => {
-      cancelled = true;
-      if (reconnectTimer) window.clearTimeout(reconnectTimer);
-      if (socket && socket.readyState < 2) socket.close();
-    };
-  }, [wsBase]);
 
 
   async function loadWeather() {
