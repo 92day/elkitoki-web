@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 
-export default function useSensorStream(wsBase, setSensors, setSensorLog) {
+export default function useSensorStream(wsBase, setSensors) {
   const [wsConnected, setWsConnected] = useState(false);
 
   useEffect(() => {
@@ -18,14 +18,10 @@ export default function useSensorStream(wsBase, setSensors, setSensorLog) {
           const payload = JSON.parse(event.data);
           if (payload.event === 'sensor' && payload.data) {
             const nextSensor = payload.data;
-            setSensors((prev) => ({ ...prev, [nextSensor.type]: { value: nextSensor.value, unit: nextSensor.unit || '' } }));
-            setSensorLog((prev) => [
-              {
-                id: `${Date.now()}-${nextSensor.type}`,
-                text: `[${new Date().toLocaleTimeString('ko-KR', { hour12: false })}] ${nextSensor.type}: ${nextSensor.value}${nextSensor.unit || ''}`,
-              },
+            setSensors((prev) => ({
               ...prev,
-            ].slice(0, 40));
+              [nextSensor.type]: { value: nextSensor.value, unit: nextSensor.unit || '' },
+            }));
           }
         } catch (error) {
           console.error(error);
@@ -43,7 +39,7 @@ export default function useSensorStream(wsBase, setSensors, setSensorLog) {
       if (reconnectTimer) window.clearTimeout(reconnectTimer);
       if (socket && socket.readyState < 2) socket.close();
     };
-  }, [wsBase, setSensors, setSensorLog]);
+  }, [wsBase, setSensors]);
 
   return wsConnected;
 }
