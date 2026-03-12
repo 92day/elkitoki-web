@@ -24,7 +24,7 @@
   return (
     <div className="page active">
       <div className="section-header">
-        <div className="section-title">워키토키</div>
+        <div className="section-title">실시간 번역</div>
       </div>
 
       <div className="panel">
@@ -124,3 +124,4 @@
     </div>
   );
 }
+
