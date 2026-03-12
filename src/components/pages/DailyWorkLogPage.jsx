@@ -40,9 +40,9 @@
       </div>
 
       <div className="panel">
-        <div className="panel-title">🗒️ 번역 로그</div>
+        <div className="panel-title">🗒️ 소통 로그</div>
         <div className="report-list-wrap">
-          {todayReports.length === 0 && <div className="table-empty">오늘 저장된 대화 기록이 없습니다.</div>}
+          {todayReports.length === 0 && <div className="table-empty">오늘 저장된 소통 로그가 없습니다.</div>}
           {todayReports.map((report) => (
             <div className="report-item" key={report.id}>
               <div className="report-header">
@@ -60,8 +60,7 @@
                   </svg>
                 </button>
               </div>
-              <div className="report-preview">원문: {report.text_content}</div>
-              {report.translated_text && <div className="report-preview">번역: {report.translated_text}</div>}
+              <div className="report-preview">{report.text_content}</div>
             </div>
           ))}
         </div>
