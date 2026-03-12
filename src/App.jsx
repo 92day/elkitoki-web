@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSpeechRecognition from './hooks/useSpeechRecognition';
 import useThemePreference from './hooks/useThemePreference';
 import useClockDisplay from './hooks/useClockDisplay';
@@ -156,7 +156,7 @@ export default function App() {
         if (activePage === 'zones') await loadWorkers();
         if (activePage === 'progress') setMessage('공정 진행률을 확인하세요.');
         if (activePage === 'alerts') await loadAlerts();
-        if (activePage === 'report') setMessage('워키토키 번역 화면입니다.');
+        if (activePage === 'report') setMessage('실시간 번역 화면입니다.');
         if (activePage === 'daily-log') await Promise.all([loadReports(), loadTodaySummary()]);
         if (activePage === 'photos') await loadPhotos();
         if (activePage === 'settings-alert') setMessage('\uc54c\ub9bc \uc124\uc815\uc744 \uc870\uc815\ud558\uc138\uc694.');
@@ -355,7 +355,7 @@ export default function App() {
     setSourceText('');
     setTranslatedText('');
     setRecordSeconds(0);
-    setMessage('워키토키 입력을 초기화했습니다.');
+    setMessage('실시간 번역 입력을 초기화했습니다.');
   }
 
   function handlePlayTranslatedText() {
@@ -641,6 +641,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 

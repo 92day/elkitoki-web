@@ -42,15 +42,15 @@
         </div>
         <div className="theme-card">
           <div>
-            <div className="theme-card-label">{'\ud14c\ub9c8 \ubaa8\ub4dc'}</div>
-            <div className="theme-card-mode">{theme === 'light' ? '\ub77c\uc774\ud2b8 \ubaa8\ub4dc' : '\ub2e4\ud06c \ubaa8\ub4dc'}</div>
+            <div className="theme-card-label">테마 모드</div>
+            <div className="theme-card-mode">{theme === 'light' ? '라이트 모드' : '다크 모드'}</div>
           </div>
           <label className="theme-switch">
             <input
               type="checkbox"
               checked={theme === 'light'}
               onChange={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
-              aria-label={'\ub77c\uc774\ud2b8 \ubaa8\ub4dc \uc804\ud658'}
+              aria-label="라이트 모드 전환"
             />
             <span className="theme-slider"></span>
           </label>

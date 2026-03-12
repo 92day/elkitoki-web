@@ -33,12 +33,12 @@ export const LANGUAGES = [
   { code: 'km', label: '\ud06c\uba54\ub974\uc5b4', badge: 'KH', flagPath: '/flags/kh.svg', speech: 'km-KH', voice: 'km-KH' },
 ];
 
-export const WORKER_ROLE_OPTIONS = ['소장', '안전관리자', '현장관리자', '현장직', '기타'];
+export const WORKER_ROLE_OPTIONS = ['\uc18c\uc7a5', '\uc548\uc804\uad00\ub9ac\uc790', '\ud604\uc7a5\uad00\ub9ac\uc790', '\ud604\uc7a5\uc9c1', '\uae30\ud0c0'];
 
 export const WORKER_STATUS_LABELS = { work: '\uc791\uc5c5 \uc911', rest: '\ud734\uc2dd', absent: '\ubbf8\ucd9c\uadfc' };
 
 export const NAV_SECTIONS = [
-  { title: '\uba54\uc778 \uba54\ub274', items: [
+  { title: '\ud604\uc7a5\uad00\ub9ac', items: [
     { key: 'dashboard', label: '\ud604\ud669 \ub300\uc2dc\ubcf4\ub4dc', icon: '\ud83d\udcca' },
     { key: 'workers', label: '\uc778\ub825 \uad00\ub9ac', icon: '\ud83d\udc77' },
     { key: 'zones', label: '\uad6c\uc5ed \ud604\ud669', icon: '\ud83d\uddfa\ufe0f' },
@@ -46,7 +46,7 @@ export const NAV_SECTIONS = [
   ]},
   { title: '\uae30\ub85d / \uc548\uc804', items: [
     { key: 'alerts', label: '\uc548\uc804 \uc54c\ub9bc', icon: '\u26a0\ufe0f', countKey: 'alerts' },
-    { key: 'report', label: '\uc6cc\ud0a4\ud1a0\ud0a4', icon: '\ud83d\udcfb' },
+    { key: 'report', label: '\uc2e4\uc2dc\uac04 \ubc88\uc5ed', icon: '\ud83d\udcfb' },
     { key: 'daily-log', label: '\uc624\ub298\uc758 \uc791\uc5c5\uc77c\uc9c0', icon: '\ud83d\uddd2\ufe0f' },
     { key: 'photos', label: '\ud604\uc7a5 \uc0ac\uc9c4', icon: '\ud83d\udcf8' },
   ]},
@@ -55,6 +55,3 @@ export const NAV_SECTIONS = [
     { key: 'settings-env', label: '\ud658\uacbd \uc124\uc815', icon: '\u2699\ufe0f' },
   ]},
 ];
-
-
-
