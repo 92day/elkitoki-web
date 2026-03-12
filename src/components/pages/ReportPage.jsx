@@ -21,6 +21,10 @@
   todayReports = [],
   handleDeleteReport,
 }) {
+  const helperText = speech.isListening
+    ? '버튼을 누르고 있는 동안 음성을 인식합니다.'
+    : '버튼을 누른 채로 말하고, 손을 떼면 자동 번역과 음성 재생이 시작됩니다.';
+
   return (
     <div className="page active">
       <div className="section-header">
@@ -60,33 +64,41 @@
           </div>
         </div>
 
+        <div className="walkie-help-text">{helperText}</div>
+
         <div className="recorder-box recorder-box-spaced">
-          <div className="record-timer">{formatTimer(recordSeconds)}</div>
-          <button
-            className={`record-btn walkie-record-btn ${speech.isListening ? 'recording' : ''}`}
-            onPointerDown={(event) => {
-              event.preventDefault();
-              handlePressToTalkStart();
-            }}
-            onPointerUp={handlePressToTalkEnd}
-            onPointerLeave={handlePressToTalkEnd}
-            onPointerCancel={handlePressToTalkEnd}
-            type="button"
-          >
-            🎤
-          </button>
-          <div className="record-status">
-            {speech.isListening ? '버튼을 누르고 있는 동안 음성을 인식합니다.' : '버튼을 누른 채로 말하고, 손을 떼면 자동 번역과 음성 재생이 시작됩니다.'}
-          </div>
           <div className="walkie-language-row">
             <span><img className="walkie-inline-flag" src={sourceMeta.flagPath} alt={`${sourceMeta.label} flag`} /> 말할 언어: {sourceMeta.label}</span>
             <span><img className="walkie-inline-flag" src={targetMeta.flagPath} alt={`${targetMeta.label} flag`} /> 번역 언어: {targetMeta.label}</span>
           </div>
-          <div className={`stt-result ${sourceText ? 'filled' : ''}`}>{sourceText || '말하면 여기에 텍스트가 표시됩니다...'}</div>
-          <div className={`stt-result walkie-translation-box ${translatedText ? 'filled' : ''}`}>
-            {translating ? '번역 중...' : translatedText || '번역 결과가 여기에 표시됩니다...'}
+
+          <div className="walkie-main-row">
+            <div className="walkie-text-stack">
+              <div className={`stt-result walkie-result-compact ${sourceText ? 'filled' : ''}`}>{sourceText || '말하면 여기에 텍스트가 표시됩니다...'}</div>
+              <div className={`stt-result walkie-result-compact walkie-translation-box ${translatedText ? 'filled' : ''}`}>
+                {translating ? '번역 중...' : translatedText || '번역 결과가 여기에 표시됩니다...'}
+              </div>
+              {speech.error && <div className="walkie-error">{getSpeechErrorMessage(speech.error)}</div>}
+            </div>
+
+            <div className="walkie-mic-stack">
+              <button
+                className={`record-btn walkie-record-btn ${speech.isListening ? 'recording' : ''}`}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  handlePressToTalkStart();
+                }}
+                onPointerUp={handlePressToTalkEnd}
+                onPointerLeave={handlePressToTalkEnd}
+                onPointerCancel={handlePressToTalkEnd}
+                type="button"
+              >
+                🎤
+              </button>
+              <div className="record-timer walkie-side-timer">{formatTimer(recordSeconds)}</div>
+            </div>
           </div>
-          {speech.error && <div className="walkie-error">{getSpeechErrorMessage(speech.error)}</div>}
+
           <div className="walkie-action-row">
             <button className="btn-primary react-btn-auto" onClick={handleSaveWalkie} disabled={savingReport} type="button">{savingReport ? '저장 중...' : '저장'}</button>
             <button className="btn-sm react-btn-auto" onClick={handleResetWalkie} type="button">초기화</button>
@@ -132,4 +144,3 @@
     </div>
   );
 }
-
