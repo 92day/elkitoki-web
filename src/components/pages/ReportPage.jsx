@@ -63,7 +63,7 @@
         <div className="recorder-box recorder-box-spaced">
           <div className="record-timer">{formatTimer(recordSeconds)}</div>
           <button
-            className={`record-btn ${speech.isListening ? 'recording' : ''}`}
+            className={`record-btn walkie-record-btn ${speech.isListening ? 'recording' : ''}`}
             onPointerDown={(event) => {
               event.preventDefault();
               handlePressToTalkStart();
@@ -132,3 +132,4 @@
     </div>
   );
 }
+

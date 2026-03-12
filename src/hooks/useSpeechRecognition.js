@@ -8,6 +8,9 @@ export default function useSpeechRecognition(language = 'ko-KR') {
   const [finalTranscript, setFinalTranscript] = useState('');
   const [error, setError] = useState('');
   const transcriptRef = useRef('');
+  const shouldHoldRef = useRef(false);
+  const manualStopRef = useRef(false);
+  const restartTimeoutRef = useRef(null);
 
   const recognition = useMemo(() => {
     if (!SpeechRecognition) {
@@ -16,7 +19,7 @@ export default function useSpeechRecognition(language = 'ko-KR') {
 
     const instance = new SpeechRecognition();
     instance.lang = language;
-    instance.continuous = false;
+    instance.continuous = true;
     instance.interimResults = true;
     return instance;
   }, [language]);
@@ -46,16 +49,31 @@ export default function useSpeechRecognition(language = 'ko-KR') {
     };
 
     recognition.onerror = (event) => {
+      if (event.error === 'aborted') {
+        return;
+      }
       setError(event.error || 'speech_error');
-      setIsListening(false);
     };
 
     recognition.onend = () => {
+      if (shouldHoldRef.current && !manualStopRef.current) {
+        restartTimeoutRef.current = window.setTimeout(() => {
+          try {
+            recognition.start();
+            setIsListening(true);
+          } catch (_error) {
+          }
+        }, 120);
+        return;
+      }
+
       setIsListening(false);
-      setTranscript('');
     };
 
     return () => {
+      if (restartTimeoutRef.current) {
+        window.clearTimeout(restartTimeoutRef.current);
+      }
       recognition.abort();
     };
   }, [recognition]);
@@ -69,6 +87,8 @@ export default function useSpeechRecognition(language = 'ko-KR') {
       return;
     }
 
+    shouldHoldRef.current = true;
+    manualStopRef.current = false;
     setError('');
     setTranscript('');
     setFinalTranscript('');
@@ -80,6 +100,12 @@ export default function useSpeechRecognition(language = 'ko-KR') {
   const stop = () => {
     if (!recognition) {
       return;
+    }
+
+    shouldHoldRef.current = false;
+    manualStopRef.current = true;
+    if (restartTimeoutRef.current) {
+      window.clearTimeout(restartTimeoutRef.current);
     }
 
     try {
@@ -95,6 +121,11 @@ export default function useSpeechRecognition(language = 'ko-KR') {
   };
 
   const reset = () => {
+    shouldHoldRef.current = false;
+    manualStopRef.current = false;
+    if (restartTimeoutRef.current) {
+      window.clearTimeout(restartTimeoutRef.current);
+    }
     setTranscript('');
     setFinalTranscript('');
     setError('');
