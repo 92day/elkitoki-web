@@ -1,4 +1,4 @@
-﻿export default function SiteTopbar({ wsConnected, clock, dateText, currentUser, onLogout }) {
+export default function SiteTopbar({ wsConnected, clock, dateText, currentUser, onLogout }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
