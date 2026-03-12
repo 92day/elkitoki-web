@@ -40,13 +40,14 @@
 
 .table-action-stack {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: 6px;
-  align-items: flex-start;
+  align-items: center;
+  flex-wrap: nowrap;
 }
 
 .compact-select {
-  min-width: 92px;
+  min-width: 84px;
   padding: 6px 8px;
   font-size: 12px;
 }
@@ -459,3 +460,4 @@
   font-weight: 700;
   color: var(--text);
 }
+
