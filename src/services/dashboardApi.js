@@ -1,4 +1,4 @@
-export async function apiRequest(apiBase, path, options = {}) {
+﻿export async function apiRequest(apiBase, path, options = {}) {
   const { method = 'GET', body, headers = {} } = options;
   const requestOptions = { method, headers: { ...headers } };
 
@@ -24,6 +24,9 @@ export const fetchWorkers = (apiBase) => apiRequest(apiBase, '/api/workers/');
 export const fetchAlerts = (apiBase) => apiRequest(apiBase, '/api/alerts/');
 export const fetchLatestSensors = (apiBase) => apiRequest(apiBase, '/api/sensors/latest');
 export const fetchReports = (apiBase) => apiRequest(apiBase, '/api/reports/');
+export const fetchTodayReports = (apiBase) => apiRequest(apiBase, '/api/reports/today');
+export const fetchTodaySummary = (apiBase) => apiRequest(apiBase, '/api/reports/summary/today');
+export const upsertTodaySummary = (apiBase, payload) => apiRequest(apiBase, '/api/reports/summary/today', { method: 'PUT', body: payload });
 export const fetchPhotos = (apiBase, zoneId = '') => apiRequest(apiBase, `/api/photos/${zoneId ? `?zone_id=${zoneId}` : ''}`);
 
 export const createWorker = (apiBase, payload) => apiRequest(apiBase, '/api/workers/', { method: 'POST', body: payload });

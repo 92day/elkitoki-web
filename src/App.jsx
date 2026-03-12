@@ -7,8 +7,8 @@ import './App.css';
 import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_ROLE_OPTIONS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
 import { formatShiftDuration, formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
-import { AlertSettingsPage, AlertsPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkersPage, ZonesPage } from './components/pages';
-import { createAlert, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchReports, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
+import { AlertSettingsPage, AlertsPage, DailyWorkLogPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkersPage, ZonesPage } from './components/pages';
+import { createAlert, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchTodaySummary, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 export default function App() {
   const apiBase = useMemo(() => getApiBase(), []);
@@ -29,6 +29,9 @@ export default function App() {
   const [sensors, setSensors] = useState({ temperature: null, humidity: null, dust: null, gas: null });
   const [sensorLog, setSensorLog] = useState([]);
   const [reports, setReports] = useState([]);
+  const [todaySummary, setTodaySummary] = useState(null);
+  const [manualLogText, setManualLogText] = useState('');
+  const [savingManualLog, setSavingManualLog] = useState(false);
   const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [photoAnalysisKo, setPhotoAnalysisKo] = useState({});
@@ -130,7 +133,8 @@ export default function App() {
   async function loadWorkers() { const data = await fetchWorkers(apiBase); setWorkers(Array.isArray(data) ? data : []); }
   async function loadAlerts() { const data = await fetchAlerts(apiBase); setAlerts(Array.isArray(data) ? data : []); }
   async function loadSensors() { const data = await fetchLatestSensors(apiBase); setSensors(data || { temperature: null, humidity: null, dust: null, gas: null }); }
-  async function loadReports() { const data = await fetchReports(apiBase); setReports(Array.isArray(data) ? data : []); }
+  async function loadReports() { const data = await fetchTodayReports(apiBase); setReports(Array.isArray(data) ? data : []); }
+  async function loadTodaySummary() { const data = await fetchTodaySummary(apiBase); setTodaySummary(data || null); }
   async function loadPhotos() {
     const data = await fetchPhotos(apiBase, photoZone);
     setPhotos(Array.isArray(data) ? data : []);
@@ -152,7 +156,8 @@ export default function App() {
         if (activePage === 'zones') await loadWorkers();
         if (activePage === 'progress') setMessage('공정 진행률을 확인하세요.');
         if (activePage === 'alerts') await loadAlerts();
-        if (activePage === 'report') await loadReports();
+        if (activePage === 'report') setMessage('워키토키 번역 화면입니다.');
+        if (activePage === 'daily-log') await Promise.all([loadReports(), loadTodaySummary()]);
         if (activePage === 'photos') await loadPhotos();
         if (activePage === 'settings-alert') setMessage('\uc54c\ub9bc \uc124\uc815\uc744 \uc870\uc815\ud558\uc138\uc694.');
         if (activePage === 'settings-env') setMessage('\ud658\uacbd \uc124\uc815\uc744 \uc870\uc815\ud558\uc138\uc694.');
@@ -385,6 +390,7 @@ export default function App() {
         source_language: sourceLanguage,
         target_language: targetLanguage,
         author_name: currentUser?.name || '\uad6c\uc774\uc77c',
+        entry_type: 'translation',
       });
       await loadReports();
       setMessage('전달 기록을 저장했습니다.');
@@ -395,6 +401,31 @@ export default function App() {
     }
   }
 
+  async function handleCreateManualLog() {
+    const text = manualLogText.trim();
+    if (!text) {
+      setMessage('수동 기록 내용을 입력해 주세요.');
+      return;
+    }
+    try {
+      setSavingManualLog(true);
+      await createReport(apiBase, {
+        text_content: text,
+        translated_text: '',
+        source_language: 'ko',
+        target_language: 'ko',
+        author_name: currentUser?.name || '구이일',
+        entry_type: 'manual',
+      });
+      setManualLogText('');
+      await loadReports();
+      setMessage('수동 작업 기록을 저장했습니다.');
+    } catch (error) {
+      setMessage(`수동 작업 기록 저장에 실패했습니다: ${error.message}`);
+    } finally {
+      setSavingManualLog(false);
+    }
+  }
   async function handleDeleteReport(reportId) {
     if (!window.confirm('이 전달 기록을 삭제하시겠습니까?')) return;
     try {
@@ -525,13 +556,23 @@ export default function App() {
         savingReport={savingReport}
         handleSaveWalkie={handleSaveWalkie}
         handleResetWalkie={handleResetWalkie}
-        visibleReports={visibleReports}
-        handleDeleteReport={handleDeleteReport}
       />
     );
   }
 
-  
+  function renderDailyLogPage() {
+    return (
+      <DailyWorkLogPage
+        todaySummary={todaySummary}
+        todayReports={visibleReports}
+        manualLogText={manualLogText}
+        setManualLogText={setManualLogText}
+        handleCreateManualLog={handleCreateManualLog}
+        handleDeleteReport={handleDeleteReport}
+        savingManualLog={savingManualLog}
+      />
+    );
+  }
 
   function renderAlertSettingsPage() {
     return <AlertSettingsPage onSave={setMessage} />;
@@ -569,6 +610,7 @@ export default function App() {
     if (activePage === 'alerts') return renderAlertsPage();
     if (activePage === 'report') return renderReportPage();
     if (activePage === 'photos') return renderPhotosPage();
+    if (activePage === 'daily-log') return renderDailyLogPage();
     if (activePage === 'settings-alert') return renderAlertSettingsPage();
     if (activePage === 'settings-env') return renderEnvironmentSettingsPage();
     return <div className="page active"><div className="section-title">준비 중</div></div>;
@@ -599,6 +641,9 @@ export default function App() {
     </div>
   );
 }
+
+
+
 
 
 

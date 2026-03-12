@@ -50,6 +50,7 @@ export const NAV_SECTIONS = [
   { title: '\uae30\ub85d / \uc548\uc804', items: [
     { key: 'alerts', label: '\uc548\uc804 \uc54c\ub9bc', icon: '\u26a0\ufe0f', countKey: 'alerts' },
     { key: 'report', label: '\uc6cc\ud0a4\ud1a0\ud0a4', icon: '\ud83d\udcfb' },
+    { key: 'daily-log', label: '\uc624\ub298\uc758 \uc791\uc5c5\uc77c\uc9c0', icon: '\ud83d\uddd2\ufe0f' },
     { key: 'photos', label: '\ud604\uc7a5 \uc0ac\uc9c4', icon: '\ud83d\udcf8' },
   ]},
   { title: '\uc124\uc815', items: [
@@ -57,4 +58,5 @@ export const NAV_SECTIONS = [
     { key: 'settings-env', label: '\ud658\uacbd \uc124\uc815', icon: '\u2699\ufe0f' },
   ]},
 ];
+
 
