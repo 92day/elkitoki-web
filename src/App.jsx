@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import useSpeechRecognition from './hooks/useSpeechRecognition';
 import useThemePreference from './hooks/useThemePreference';
 import useClockDisplay from './hooks/useClockDisplay';
@@ -49,6 +49,7 @@ export default function App() {
   const [recordSeconds, setRecordSeconds] = useState(0);
   const [translating, setTranslating] = useState(false);
   const [savingReport, setSavingReport] = useState(false);
+  const [autoTranslateAfterSpeech, setAutoTranslateAfterSpeech] = useState(false);
 
   const [photoZone, setPhotoZone] = useState('');
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
@@ -119,6 +120,25 @@ export default function App() {
     };
   }, [speech.isListening]);
 
+  useEffect(() => {
+    if (!speech.finalTranscript) return;
+
+    const finalText = speech.finalTranscript.trim();
+    speech.clearFinalTranscript();
+
+    if (!finalText) {
+      setAutoTranslateAfterSpeech(false);
+      return;
+    }
+
+    setSourceText(finalText);
+
+    if (autoTranslateAfterSpeech) {
+      setAutoTranslateAfterSpeech(false);
+      void handleTranslateWalkie(finalText, { autoSpeak: true });
+    }
+  }, [autoTranslateAfterSpeech, speech]);
+
 
 
   async function loadWeather() {
@@ -156,7 +176,10 @@ export default function App() {
         if (activePage === 'zones') await loadWorkers();
         if (activePage === 'progress') setMessage('공정 진행률을 확인하세요.');
         if (activePage === 'alerts') await loadAlerts();
-        if (activePage === 'report') setMessage('실시간 번역 화면입니다.');
+        if (activePage === 'report') {
+          await loadReports();
+          setMessage('실시간 번역 화면입니다.');
+        }
         if (activePage === 'daily-log') await Promise.all([loadReports(), loadTodaySummary()]);
         if (activePage === 'photos') await loadPhotos();
         if (activePage === 'settings-alert') setMessage('\uc54c\ub9bc \uc124\uc815\uc744 \uc870\uc815\ud558\uc138\uc694.');
@@ -327,41 +350,9 @@ export default function App() {
     }
   }
 
-  async function handleTranslateWalkie() {
-    const text = sourceText.trim();
-    if (!text) {
-      setMessage('먼저 말하거나 텍스트를 입력해 주세요.');
-      return;
-    }
-    if (sourceLanguage === targetLanguage) {
-      setTranslatedText(text);
-      setMessage('같은 언어로 선택되어 원문을 그대로 표시했습니다.');
-      return;
-    }
-    try {
-      setTranslating(true);
-      const data = await translateText(apiBase, { text, source_language: sourceLanguage, target_language: targetLanguage });
-      setTranslatedText(data.translated_text || '');
-      setMessage(`${targetMeta.label} 번역이 완료되었습니다.`);
-    } catch (error) {
-      setMessage(`번역에 실패했습니다: ${error.message}`);
-    } finally {
-      setTranslating(false);
-    }
-  }
-
-  function handleResetWalkie() {
-    speech.stop();
-    setSourceText('');
-    setTranslatedText('');
-    setRecordSeconds(0);
-    setMessage('실시간 번역 입력을 초기화했습니다.');
-  }
-
-  function handlePlayTranslatedText() {
-    const text = translatedText.trim();
-    if (!text) {
-      setMessage('재생할 번역 문장이 없습니다.');
+  function speakTranslatedText(text) {
+    const speakText = (text || '').trim();
+    if (!speakText) {
       return;
     }
     if (!window.speechSynthesis) {
@@ -369,11 +360,69 @@ export default function App() {
       return;
     }
     window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
+    const utterance = new SpeechSynthesisUtterance(speakText);
     utterance.lang = targetMeta.voice;
     utterance.rate = 0.95;
     window.speechSynthesis.speak(utterance);
-    setMessage('번역 음성을 재생 중입니다.');
+  }
+
+  async function handleTranslateWalkie(inputText = sourceText, options = {}) {
+    const text = (inputText || '').trim();
+    const autoSpeak = options.autoSpeak === true;
+    if (!text) {
+      setMessage('먼저 말하거나 텍스트를 입력해 주세요.');
+      return;
+    }
+    if (sourceLanguage === targetLanguage) {
+      setTranslatedText(text);
+      setMessage('같은 언어로 선택되어 원문을 그대로 표시했습니다.');
+      if (autoSpeak) {
+        speakTranslatedText(text);
+      }
+      return;
+    }
+    try {
+      setTranslating(true);
+      const data = await translateText(apiBase, { text, source_language: sourceLanguage, target_language: targetLanguage });
+      const nextTranslatedText = data.translated_text || '';
+      setTranslatedText(nextTranslatedText);
+      setMessage(autoSpeak ? `${targetMeta.label} 번역과 음성 재생이 완료되었습니다.` : `${targetMeta.label} 번역이 완료되었습니다.`);
+      if (autoSpeak) {
+        speakTranslatedText(nextTranslatedText);
+      }
+    } catch (error) {
+      setMessage(`번역에 실패했습니다: ${error.message}`);
+    } finally {
+      setTranslating(false);
+    }
+  }
+
+  function handlePressToTalkStart() {
+    if (!speech.isSupported) {
+      setMessage('이 브라우저는 음성 인식을 지원하지 않습니다.');
+      return;
+    }
+    setAutoTranslateAfterSpeech(true);
+    setSourceText('');
+    setTranslatedText('');
+    setMessage('버튼을 누르고 있는 동안 음성을 인식합니다.');
+    speech.start();
+  }
+
+  function handlePressToTalkEnd() {
+    if (!speech.isListening) return;
+    speech.stop();
+  }
+
+  function handleResetWalkie() {
+    speech.stop();
+    speech.reset();
+    window.speechSynthesis?.cancel();
+    setAutoTranslateAfterSpeech(false);
+    setSourceText('');
+    setTranslatedText('');
+    setRecordSeconds(0);
+    setMessage('실시간 번역 입력을 초기화했습니다.');
   }
 
   async function handleSaveWalkie() {
@@ -551,11 +600,13 @@ export default function App() {
         translatedText={translatedText}
         getSpeechErrorMessage={getSpeechErrorMessage}
         translating={translating}
-        handleTranslateWalkie={handleTranslateWalkie}
-        handlePlayTranslatedText={handlePlayTranslatedText}
         savingReport={savingReport}
         handleSaveWalkie={handleSaveWalkie}
         handleResetWalkie={handleResetWalkie}
+        handlePressToTalkStart={handlePressToTalkStart}
+        handlePressToTalkEnd={handlePressToTalkEnd}
+        todayReports={visibleReports}
+        handleDeleteReport={handleDeleteReport}
       />
     );
   }
@@ -641,6 +692,9 @@ export default function App() {
     </div>
   );
 }
+
+
+
 
 
 

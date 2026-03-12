@@ -13,11 +13,11 @@
   translatedText,
   getSpeechErrorMessage,
   translating,
-  handleTranslateWalkie,
-  handlePlayTranslatedText,
   savingReport,
   handleSaveWalkie,
   handleResetWalkie,
+  handlePressToTalkStart,
+  handlePressToTalkEnd,
   todayReports = [],
   handleDeleteReport,
 }) {
@@ -62,20 +62,32 @@
 
         <div className="recorder-box recorder-box-spaced">
           <div className="record-timer">{formatTimer(recordSeconds)}</div>
-          <button className={`record-btn ${speech.isListening ? 'recording' : ''}`} onClick={speech.isListening ? speech.stop : speech.start} type="button">🎤</button>
+          <button
+            className={`record-btn ${speech.isListening ? 'recording' : ''}`}
+            onPointerDown={(event) => {
+              event.preventDefault();
+              handlePressToTalkStart();
+            }}
+            onPointerUp={handlePressToTalkEnd}
+            onPointerLeave={handlePressToTalkEnd}
+            onPointerCancel={handlePressToTalkEnd}
+            type="button"
+          >
+            🎤
+          </button>
           <div className="record-status">
-            {speech.isListening ? '음성 인식 중입니다.' : '버튼을 눌러 음성 인식을 시작하세요'}
+            {speech.isListening ? '버튼을 누르고 있는 동안 음성을 인식합니다.' : '버튼을 누른 채로 말하고, 손을 떼면 자동 번역과 음성 재생이 시작됩니다.'}
           </div>
           <div className="walkie-language-row">
             <span><img className="walkie-inline-flag" src={sourceMeta.flagPath} alt={`${sourceMeta.label} flag`} /> 말할 언어: {sourceMeta.label}</span>
             <span><img className="walkie-inline-flag" src={targetMeta.flagPath} alt={`${targetMeta.label} flag`} /> 번역 언어: {targetMeta.label}</span>
           </div>
           <div className={`stt-result ${sourceText ? 'filled' : ''}`}>{sourceText || '말하면 여기에 텍스트가 표시됩니다...'}</div>
-          <div className={`stt-result walkie-translation-box ${translatedText ? 'filled' : ''}`}>{translatedText || '번역 결과가 여기에 표시됩니다...'}</div>
+          <div className={`stt-result walkie-translation-box ${translatedText ? 'filled' : ''}`}>
+            {translating ? '번역 중...' : translatedText || '번역 결과가 여기에 표시됩니다...'}
+          </div>
           {speech.error && <div className="walkie-error">{getSpeechErrorMessage(speech.error)}</div>}
           <div className="walkie-action-row">
-            <button className="btn-primary react-btn-auto" onClick={handleTranslateWalkie} disabled={translating} type="button">{translating ? '번역 중...' : '번역하기'}</button>
-            <button className="btn-sm react-btn-auto" onClick={handlePlayTranslatedText} type="button">음성 재생</button>
             <button className="btn-primary react-btn-auto" onClick={handleSaveWalkie} disabled={savingReport} type="button">{savingReport ? '저장 중...' : '저장'}</button>
             <button className="btn-sm react-btn-auto" onClick={handleResetWalkie} type="button">초기화</button>
           </div>
@@ -85,9 +97,7 @@
       <div className="panel">
         <div className="panel-title">🗒️ 번역 로그</div>
         <div className="report-list-wrap">
-          {todayReports.length === 0 && (
-            <div className="table-empty">번역 로그가 없습니다.</div>
-          )}
+          {todayReports.length === 0 && <div className="table-empty">번역 로그가 없습니다.</div>}
 
           {todayReports.map((report) => (
             <div className="report-item" key={report.id}>
@@ -96,9 +106,7 @@
                   <div className="report-date">
                     {report.date || new Date(report.created_at).toLocaleDateString('ko-KR')}
                   </div>
-                  <div className="report-author">
-                    작성자: {report.author_name || '구이일'}
-                  </div>
+                  <div className="report-author">작성자: {report.author_name || '구이일'}</div>
                 </div>
                 <button
                   className="report-delete-btn react-btn-auto"
@@ -124,4 +132,3 @@
     </div>
   );
 }
-
