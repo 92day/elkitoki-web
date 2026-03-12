@@ -1,4 +1,4 @@
-export default function SiteTopbar({ wsConnected, clock, dateText }) {
+﻿export default function SiteTopbar({ wsConnected, clock, dateText, currentUser, onLogout }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
@@ -13,6 +13,12 @@ export default function SiteTopbar({ wsConnected, clock, dateText }) {
         <div className="status-pill"><div className="dot"></div>{'\uc815\uc0c1 \uc6b4\uc601 \uc911'}</div>
       </div>
       <div className="topbar-right">
+        {currentUser && (
+          <div className="topbar-user-chip">
+            <span className="topbar-user-name">{currentUser.name}</span>
+            <button className="topbar-logout-btn" type="button" onClick={onLogout}>{'\ub85c\uadf8\uc544\uc6c3'}</button>
+          </div>
+        )}
         <div className={`ws-status ${wsConnected ? 'connected' : ''}`}>{wsConnected ? '\u25cf \uc11c\ubc84 \uc5f0\uacb0\ub428' : '\u25cf \uc11c\ubc84 \uc5f0\uacb0 \uc911...'}</div>
         <div className="time-display"><div className="time">{clock}</div><div style={{ fontSize: 11, color: 'var(--muted)' }}>{dateText}</div></div>
       </div>

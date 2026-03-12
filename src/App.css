@@ -356,3 +356,100 @@
   font-size: 13px;
   line-height: 1.5;
 }
+.login-shell {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background: linear-gradient(180deg, #f5f8fc 0%, #edf2f8 100%);
+}
+
+.login-card {
+  width: min(100%, 420px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 28px;
+  box-shadow: 0 24px 48px rgba(15, 23, 42, 0.08);
+}
+
+.login-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ffb240 0%, #f28c18 100%);
+  color: white;
+  font-weight: 800;
+  font-size: 28px;
+  margin-bottom: 18px;
+}
+
+.login-title {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.login-subtitle {
+  margin-top: 8px;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.login-form {
+  margin-top: 22px;
+}
+
+.login-submit {
+  width: 100%;
+  margin-top: 6px;
+}
+
+.login-error {
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  color: var(--danger);
+  font-size: 13px;
+}
+
+.login-help {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px dashed var(--border);
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.topbar-user-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.topbar-user-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.topbar-logout-btn {
+  border: none;
+  background: transparent;
+  color: var(--warning-700, #c77b12);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}

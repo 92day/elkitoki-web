@@ -45,3 +45,7 @@ export async function uploadPhoto(apiBase, file, zoneId = '') {
 }
 
 export const removePhoto = (apiBase, photoId) => apiRequest(apiBase, `/api/photos/${photoId}`, { method: 'DELETE' });
+
+export const loginUser = (apiBase, payload) => apiRequest(apiBase, '/api/auth/login', { method: 'POST', body: payload });
+export const fetchCurrentUser = (apiBase, token) => apiRequest(apiBase, '/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
+export const logoutUser = (apiBase, token) => apiRequest(apiBase, '/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });

@@ -1,4 +1,8 @@
-export default function SidebarNav({ navSections, activePage, alertsCount, theme, setTheme, setActivePage }) {
+﻿export default function SidebarNav({ navSections, activePage, alertsCount, theme, setTheme, setActivePage, currentUser }) {
+  const displayName = currentUser?.name || '\uad6c\uc774\uc77c';
+  const displayRole = currentUser?.role === 'site_manager' ? '\ud604\uc7a5 \ucd1d\uad04 \uad00\ub9ac\uc790' : (currentUser?.role || '\ud604\uc7a5 \ucd1d\uad04 \uad00\ub9ac\uc790');
+  const avatarLabel = displayName?.trim()?.charAt(0) || '\uad6c';
+
   return (
     <div className="sidebar">
       {navSections.map((section) => (
@@ -30,10 +34,10 @@ export default function SidebarNav({ navSections, activePage, alertsCount, theme
 
       <div className="sidebar-footer">
         <div className="user-card">
-          <div className="avatar">{'\uad6c'}</div>
+          <div className="avatar">{avatarLabel}</div>
           <div className="user-info">
-            <div className="name">{'\uad6c\uc774\uc77c'}</div>
-            <div className="role">{'\ud604\uc7a5 \ucd1d\uad04 \uad00\ub9ac\uc790'}</div>
+            <div className="name">{displayName}</div>
+            <div className="role">{displayRole}</div>
           </div>
         </div>
         <div className="theme-card">

@@ -4,20 +4,24 @@ import useThemePreference from './hooks/useThemePreference';
 import useClockDisplay from './hooks/useClockDisplay';
 import useSensorStream from './hooks/useSensorStream';
 import './App.css';
-import { LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
+import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
 import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
-import { AlertSettingsPage, AlertsPage, DashboardPage, EnvironmentSettingsPage, PhotosPage, ProgressPage, ReportPage, SensorsPage, WorkersPage, ZonesPage } from './components/pages';
-import { createAlert, createReport, createWorker, fetchAlerts, fetchLatestSensors, fetchPhotos, fetchReports, fetchWeather, fetchWorkers, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
+import { AlertSettingsPage, AlertsPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, SensorsPage, WorkersPage, ZonesPage } from './components/pages';
+import { createAlert, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchReports, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 export default function App() {
   const apiBase = useMemo(() => getApiBase(), []);
   const wsBase = useMemo(() => apiBase.replace(/^http/, 'ws'), [apiBase]);
 
   const [activePage, setActivePage] = useState('dashboard');
+  const [authToken, setAuthToken] = useState(() => window.localStorage.getItem(AUTH_STORAGE_KEY) || '');
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(() => Boolean(window.localStorage.getItem(AUTH_STORAGE_KEY)));
+  const [authError, setAuthError] = useState('');
   const [theme, setTheme] = useThemePreference(THEME_KEY);
   const { clock, dateText } = useClockDisplay();
-  const [message, setMessage] = useState('대시보드를 불러오는 중입니다.');
+  const [message, setMessage] = useState('????? ???? ????.');
 
   const [weather, setWeather] = useState(null);
   const [workers, setWorkers] = useState([]);
@@ -61,9 +65,40 @@ export default function App() {
 
 
   useEffect(() => {
+    if (!authToken) {
+      setCurrentUser(null);
+      setAuthLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setAuthLoading(true);
+    setAuthError('');
+
+    fetchCurrentUser(apiBase, authToken)
+      .then((user) => {
+        if (cancelled) return;
+        setCurrentUser(user);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        window.localStorage.removeItem(AUTH_STORAGE_KEY);
+        setAuthToken('');
+        setCurrentUser(null);
+        setAuthError('??? ???????. ?? ???? ???.');
+      })
+      .finally(() => {
+        if (!cancelled) setAuthLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBase, authToken]);
+
+  useEffect(() => {
     if (speech.transcript) setSourceText(speech.transcript);
   }, [speech.transcript]);
-
   useEffect(() => {
     const errorMessage = getSpeechErrorMessage(speech.error);
     if (errorMessage) setMessage(errorMessage);
@@ -105,6 +140,8 @@ export default function App() {
   async function loadDashboard() { await Promise.all([loadWeather(), loadWorkers(), loadAlerts(), loadSensors()]); }
 
   useEffect(() => {
+    if (!currentUser) return;
+
     const run = async () => {
       try {
         if (activePage === 'dashboard') {
@@ -125,15 +162,17 @@ export default function App() {
       }
     };
     run();
-  }, [activePage]);
+  }, [activePage, currentUser]);
 
   useEffect(() => {
+    if (!currentUser) return;
     loadWeather();
     const timerId = window.setInterval(loadWeather, WEATHER_REFRESH_MS);
     return () => window.clearInterval(timerId);
-  }, []);
+  }, [currentUser]);
 
   useEffect(() => {
+    if (!currentUser) return;
     if (activePage === 'photos') {
       loadPhotos().catch((error) => setMessage(`현장 사진을 불러오지 못했습니다: ${error.message}`));
     }
@@ -177,6 +216,38 @@ export default function App() {
       cancelled = true;
     };
   }, [selectedPhoto, photoAnalysisKo]);
+
+  async function handleLogin(credentials) {
+    try {
+      setAuthLoading(true);
+      setAuthError('');
+      const response = await loginUser(apiBase, credentials);
+      window.localStorage.setItem(AUTH_STORAGE_KEY, response.access_token);
+      setAuthToken(response.access_token);
+      setCurrentUser(response.user);
+      setActivePage('dashboard');
+      setMessage('\ub85c\uadf8\uc778\ub418\uc5c8\uc2b5\ub2c8\ub2e4.');
+    } catch (error) {
+      setAuthError(error.message);
+    } finally {
+      setAuthLoading(false);
+    }
+  }
+
+  async function handleLogout() {
+    if (authToken) {
+      try {
+        await logoutUser(apiBase, authToken);
+      } catch (_error) {
+      }
+    }
+
+    window.localStorage.removeItem(AUTH_STORAGE_KEY);
+    setAuthToken('');
+    setCurrentUser(null);
+    setAuthError('');
+    setActivePage('dashboard');
+  }
 
   async function handleCreateWorker() {
     if (!newWorker.name.trim()) {
@@ -313,7 +384,7 @@ export default function App() {
         translated_text: translatedText.trim(),
         source_language: sourceLanguage,
         target_language: targetLanguage,
-        author_name: '????',
+        author_name: currentUser?.name || '???',
       });
       await loadReports();
       setMessage('전달 기록을 저장했습니다.');
@@ -504,9 +575,13 @@ export default function App() {
     return <div className="page active"><div className="section-title">준비 중</div></div>;
   }
 
+  if (!currentUser) {
+    return <LoginPage loading={authLoading} error={authError} onLogin={handleLogin} />;
+  }
+
   return (
     <div className="ipad-shell">
-      <SiteTopbar wsConnected={wsConnected} clock={clock} dateText={dateText} />
+      <SiteTopbar wsConnected={wsConnected} clock={clock} dateText={dateText} currentUser={currentUser} onLogout={handleLogout} />
       <div className="main">
         <SidebarNav
           navSections={NAV_SECTIONS}
@@ -515,6 +590,7 @@ export default function App() {
           theme={theme}
           setTheme={setTheme}
           setActivePage={setActivePage}
+          currentUser={currentUser}
         />
         <div className="content">
           <div className="react-message-bar">{message}</div>

@@ -1,4 +1,5 @@
 export const THEME_KEY = 'dashboard_theme';
+export const AUTH_STORAGE_KEY = 'elkitoki_auth_token';
 export const WEATHER_REFRESH_MS = 5 * 60 * 1000;
 
 export const ZONES = [
