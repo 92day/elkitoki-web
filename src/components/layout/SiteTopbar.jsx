@@ -5,7 +5,7 @@ export default function SiteTopbar({ wsConnected, clock, dateText, currentUser, 
         <div className="site-badge">
           <div className="icon">{'\ud83c\udfd7\ufe0f'}</div>
           <div>
-            <div className="site-name">{'\ub530\ub989\ub530\ub989\ub530\ub974\ub989'}</div>
+            <div className="site-name">{'202603121700'}</div>
             <div className="site-sub">{'\uc11c\uc6b8 \ub9c8\ud3ec\uad6c \u00b7 \uacf5\uc815\ub960 67% \u00b7 \ud604\uc7a5\ucf54\ub4dc #LGEDX-2026-92'}</div>
           </div>
         </div>
