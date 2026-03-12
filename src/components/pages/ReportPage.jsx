@@ -165,10 +165,10 @@
       </div>
 
       <div className="panel">
-        <div className="panel-title">{'\ud83d\uddd2\ufe0f \\ubc88\\uc5ed \\ub85c\\uadf8'}</div>
+        <div className="panel-title">{'\ud83d\uddd2\ufe0f \ubc88\uc5ed \ub85c\uadf8'}</div>
         <div className="report-list-wrap">
           {visibleReports.length === 0 && (
-            <div className="table-empty">{'\\ubc88\\uc5ed \\ub85c\\uadf8\uc774 \uc5c6\uc2b5\ub2c8\ub2e4.'}</div>
+            <div className="table-empty">{'\ubc88\uc5ed \ub85c\uadf8\uac00 \uc5c6\uc2b5\ub2c8\ub2e4.'}</div>
           )}
 
           {visibleReports.map((report) => (
@@ -206,5 +206,6 @@
     </div>
   );
 }
+
 
 
