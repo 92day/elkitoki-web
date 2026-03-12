@@ -6,9 +6,6 @@ export const ZONES = [
   { id: 1, name: 'A\uad6c\uc5ed', description: 'B2', task: '\ucca0\uadfc \uc791\uc5c5', risk: 'safe' },
   { id: 2, name: 'B\uad6c\uc5ed', description: 'B1', task: '\ucf58\ud06c\ub9ac\ud2b8 \ud0c0\uc124', risk: 'safe' },
   { id: 3, name: 'C\uad6c\uc5ed', description: '1F-3F', task: '\uace0\uc18c \uc791\uc5c5', risk: 'caution' },
-  { id: 4, name: 'D\uad6c\uc5ed', description: '4F-6F', task: '\uace8\uc870 \uc791\uc5c5', risk: 'safe' },
-  { id: 5, name: 'E\uad6c\uc5ed', description: '\uc625\uc0c1', task: '\uc9c0\ubd95 \uc791\uc5c5', risk: 'danger' },
-  { id: 6, name: 'F\uad6c\uc5ed', description: '\uc678\ubcbd', task: '\uc678\uc7a5 \ub9c8\uac10', risk: 'safe' },
 ];
 
 export const PROGRESS_ITEMS = [
