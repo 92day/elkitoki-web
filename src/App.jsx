@@ -37,7 +37,7 @@ export default function App() {
   const [showWorkerForm, setShowWorkerForm] = useState(false);
   const [newWorker, setNewWorker] = useState({ name: '', role: '', phone: '', zone_id: '' });
   const [showAlertForm, setShowAlertForm] = useState(false);
-  const [newAlert, setNewAlert] = useState({ level: 'high', source: '', message: '' });
+  const [newAlert, setNewAlert] = useState({ level: 'high', source: '', message: '', zone_id: '' });
 
   const [sourceLanguage, setSourceLanguage] = useState('ko');
   const [targetLanguage, setTargetLanguage] = useState('vi');
@@ -301,8 +301,9 @@ export default function App() {
         level: newAlert.level,
         source: newAlert.source.trim() || '\ud604\uc7a5 \uc218\ub3d9 \uc785\ub825',
         message: newAlert.message.trim(),
+        zone_id: newAlert.zone_id ? Number(newAlert.zone_id) : null,
       });
-      setNewAlert({ level: 'high', source: '', message: '' });
+      setNewAlert({ level: 'high', source: '', message: '', zone_id: '' });
       setShowAlertForm(false);
       await loadAlerts();
       setMessage('안전 알림을 등록했습니다.');
@@ -497,6 +498,7 @@ export default function App() {
         handleCreateAlert={handleCreateAlert}
         alerts={alerts}
         handleResolveAlert={handleResolveAlert}
+        zones={ZONES}
       />
     );
   }
@@ -597,6 +599,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 
