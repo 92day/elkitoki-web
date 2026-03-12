@@ -11,6 +11,7 @@
   handleUpdateWorkerStatus,
   handleDeleteWorker,
   formatShiftDuration,
+  workerRoleOptions,
 }) {
   return (
     <div className="page active">
@@ -31,7 +32,12 @@
             </div>
             <div className="form-group">
               <label className="form-label">직책</label>
-              <input className="form-input" value={newWorker.role} onChange={(event) => setNewWorker((prev) => ({ ...prev, role: event.target.value }))} placeholder="철근 반장" />
+              <select className="form-select" value={newWorker.role} onChange={(event) => setNewWorker((prev) => ({ ...prev, role: event.target.value }))}>
+                <option value="">선택</option>
+                {workerRoleOptions.map((role) => (
+                  <option key={role} value={role}>{role}</option>
+                ))}
+              </select>
             </div>
             <div className="form-group">
               <label className="form-label">연락처</label>

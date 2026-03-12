@@ -1,4 +1,4 @@
-export const THEME_KEY = 'dashboard_theme';
+﻿export const THEME_KEY = 'dashboard_theme';
 export const AUTH_STORAGE_KEY = 'elkitoki_auth_token';
 export const WEATHER_REFRESH_MS = 5 * 60 * 1000;
 
@@ -36,6 +36,8 @@ export const LANGUAGES = [
   { code: 'km', label: '\ud06c\uba54\ub974\uc5b4', badge: 'KH', flagPath: '/flags/kh.svg', speech: 'km-KH', voice: 'km-KH' },
 ];
 
+export const WORKER_ROLE_OPTIONS = ['소장', '안전관리자', '현장관리자', '관리자', '현장직', '기타'];
+
 export const WORKER_STATUS_LABELS = { work: '\uc791\uc5c5 \uc911', rest: '\ud734\uc2dd', absent: '\ubbf8\ucd9c\uadfc' };
 
 export const NAV_SECTIONS = [
@@ -55,3 +57,4 @@ export const NAV_SECTIONS = [
     { key: 'settings-env', label: '\ud658\uacbd \uc124\uc815', icon: '\u2699\ufe0f' },
   ]},
 ];
+

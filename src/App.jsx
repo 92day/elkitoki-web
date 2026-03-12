@@ -4,7 +4,7 @@ import useThemePreference from './hooks/useThemePreference';
 import useClockDisplay from './hooks/useClockDisplay';
 import useSensorStream from './hooks/useSensorStream';
 import './App.css';
-import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
+import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_ROLE_OPTIONS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
 import { formatShiftDuration, formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
 import { AlertSettingsPage, AlertsPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkersPage, ZonesPage } from './components/pages';
@@ -474,6 +474,7 @@ export default function App() {
         handleUpdateWorkerStatus={handleUpdateWorkerStatus}
         handleDeleteWorker={handleDeleteWorker}
         formatShiftDuration={formatShiftDuration}
+        workerRoleOptions={WORKER_ROLE_OPTIONS}
       />
     );
   }
@@ -596,6 +597,10 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
 
 
 
