@@ -453,3 +453,9 @@
   font-weight: 700;
   cursor: pointer;
 }
+
+
+.worker-vital-main {
+  font-weight: 700;
+  color: var(--text);
+}

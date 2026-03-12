@@ -44,7 +44,6 @@ export const NAV_SECTIONS = [
     { key: 'workers', label: '\uc778\ub825 \uad00\ub9ac', icon: '\ud83d\udc77' },
     { key: 'zones', label: '\uad6c\uc5ed \ud604\ud669', icon: '\ud83d\uddfa\ufe0f' },
     { key: 'progress', label: '\uacf5\uc815 \uad00\ub9ac', icon: '\ud83d\udccb' },
-    { key: 'sensors', label: '\uc13c\uc11c \ud604\ud669', icon: '\ud83d\udce1' },
   ]},
   { title: '\uae30\ub85d / \uc548\uc804', items: [
     { key: 'alerts', label: '\uc548\uc804 \uc54c\ub9bc', icon: '\u26a0\ufe0f', countKey: 'alerts' },

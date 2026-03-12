@@ -48,3 +48,20 @@ export function isLegacyPlaceholder(report) {
 export function getZoneMeta(zoneId) {
   return ZONES.find((zone) => zone.id === Number(zoneId)) || null;
 }
+
+export function formatShiftDuration(shiftStartedAt) {
+  if (!shiftStartedAt) return '\uce21\uc815 \uc804';
+
+  const start = new Date(shiftStartedAt);
+  if (Number.isNaN(start.getTime())) return '\uce21\uc815 \uc804';
+
+  const diffMs = Date.now() - start.getTime();
+  if (diffMs <= 0) return '0\ubd84';
+
+  const totalMinutes = Math.floor(diffMs / 60000);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  if (hours <= 0) return String(minutes) + '\ubd84';
+  return minutes > 0 ? String(hours) + '\uc2dc\uac04 ' + String(minutes) + '\ubd84' : String(hours) + '\uc2dc\uac04';
+}

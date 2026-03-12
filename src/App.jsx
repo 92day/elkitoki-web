@@ -5,9 +5,9 @@ import useClockDisplay from './hooks/useClockDisplay';
 import useSensorStream from './hooks/useSensorStream';
 import './App.css';
 import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
-import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
+import { formatShiftDuration, formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
-import { AlertSettingsPage, AlertsPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, SensorsPage, WorkersPage, ZonesPage } from './components/pages';
+import { AlertSettingsPage, AlertsPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkersPage, ZonesPage } from './components/pages';
 import { createAlert, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchReports, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 export default function App() {
@@ -21,7 +21,7 @@ export default function App() {
   const [authError, setAuthError] = useState('');
   const [theme, setTheme] = useThemePreference(THEME_KEY);
   const { clock, dateText } = useClockDisplay();
-  const [message, setMessage] = useState('????? ???? ????.');
+  const [message, setMessage] = useState('\ub300\uc2dc\ubcf4\ub4dc\ub97c \ubd88\ub7ec\uc624\ub294 \uc911\uc785\ub2c8\ub2e4.');
 
   const [weather, setWeather] = useState(null);
   const [workers, setWorkers] = useState([]);
@@ -85,7 +85,7 @@ export default function App() {
         window.localStorage.removeItem(AUTH_STORAGE_KEY);
         setAuthToken('');
         setCurrentUser(null);
-        setAuthError('??? ???????. ?? ???? ???.');
+        setAuthError('\uc138\uc158\uc774 \ub9cc\ub8cc\ub418\uc5c8\uc2b5\ub2c8\ub2e4. \ub2e4\uc2dc \ub85c\uadf8\uc778\ud574 \uc8fc\uc138\uc694.');
       })
       .finally(() => {
         if (!cancelled) setAuthLoading(false);
@@ -151,7 +151,6 @@ export default function App() {
         if (activePage === 'workers') await loadWorkers();
         if (activePage === 'zones') await loadWorkers();
         if (activePage === 'progress') setMessage('공정 진행률을 확인하세요.');
-        if (activePage === 'sensors') await loadSensors();
         if (activePage === 'alerts') await loadAlerts();
         if (activePage === 'report') await loadReports();
         if (activePage === 'photos') await loadPhotos();
@@ -300,7 +299,7 @@ export default function App() {
     try {
       await createAlert(apiBase, {
         level: newAlert.level,
-        source: newAlert.source.trim() || '?? ??',
+        source: newAlert.source.trim() || '\ud604\uc7a5 \uc218\ub3d9 \uc785\ub825',
         message: newAlert.message.trim(),
       });
       setNewAlert({ level: 'high', source: '', message: '' });
@@ -384,7 +383,7 @@ export default function App() {
         translated_text: translatedText.trim(),
         source_language: sourceLanguage,
         target_language: targetLanguage,
-        author_name: currentUser?.name || '???',
+        author_name: currentUser?.name || '\uad6c\uc774\uc77c',
       });
       await loadReports();
       setMessage('전달 기록을 저장했습니다.');
@@ -474,6 +473,7 @@ export default function App() {
         WORKER_STATUS_LABELS={WORKER_STATUS_LABELS}
         handleUpdateWorkerStatus={handleUpdateWorkerStatus}
         handleDeleteWorker={handleDeleteWorker}
+        formatShiftDuration={formatShiftDuration}
       />
     );
   }
@@ -484,10 +484,6 @@ export default function App() {
 
   function renderProgressPage() {
     return <ProgressPage PROGRESS_ITEMS={PROGRESS_ITEMS} />;
-  }
-
-  function renderSensorsPage() {
-    return <SensorsPage sensors={sensors} sensorLog={sensorLog} />;
   }
 
   function renderAlertsPage() {
@@ -566,7 +562,7 @@ export default function App() {
     if (activePage === 'workers') return renderWorkersPage();
     if (activePage === 'zones') return renderZonesPage();
     if (activePage === 'progress') return renderProgressPage();
-    if (activePage === 'sensors') return renderSensorsPage();
+    if (activePage === 'sensors') return renderDashboardPage();
     if (activePage === 'alerts') return renderAlertsPage();
     if (activePage === 'report') return renderReportPage();
     if (activePage === 'photos') return renderPhotosPage();
