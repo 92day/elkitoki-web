@@ -1,11 +1,11 @@
-﻿export default function SiteTopbar({ wsConnected, clock, dateText }) {
+export default function SiteTopbar({ wsConnected, clock, dateText }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
         <div className="site-badge">
           <div className="icon">{'🏗️'}</div>
           <div>
-            <div className="site-name">{'202603121700'}</div>
+            <div className="site-name">{'03130930'}</div>
             <div className="site-sub">{'서울 마포구 · 공정률 67% · 현장코드 #LGEDX-2026-92'}</div>
           </div>
         </div>
