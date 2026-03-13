@@ -49,9 +49,9 @@ export const NAV_SECTIONS = [
     { key: 'worker-call', label: '\uC791\uC5C5\uC790 \uD638\uCD9C', icon: '📢' },
   ]},
   { title: '\uAE30\uB85D / \uC548\uC804', items: [
+    { key: 'alerts', label: '\uC548\uC804 \uC54C\uB9BC', icon: '⚠️', countKey: 'alerts' },
     { key: 'daily-log', label: '\uC791\uC5C5 \uC77C\uC9C0', icon: '🗒️' },
     { key: 'photos', label: '\uD604\uC7A5 \uC0AC\uC9C4', icon: '📸' },
-    { key: 'alerts', label: '\uC548\uC804 \uC54C\uB9BC', icon: '⚠️', countKey: 'alerts' },
   ]},
   { title: '\uC124\uC815', items: [
     { key: 'settings-alert', label: '\uC54C\uB9BC \uC124\uC815', icon: '🔔' },
