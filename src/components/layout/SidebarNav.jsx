@@ -1,4 +1,4 @@
-﻿export default function SidebarNav({ navSections, activePage, alertsCount, theme, setTheme, setActivePage, currentUser, onLogout }) {
+export default function SidebarNav({ navSections, activePage, alertsCount, setActivePage, currentUser, onOpenMyPage }) {
   const displayName = currentUser?.name || '구이일';
   const displayRole = currentUser?.role === 'site_manager' ? '소장' : (currentUser?.role || '소장');
   const avatarLabel = displayName?.trim()?.charAt(0) || '구';
@@ -33,29 +33,14 @@
       ))}
 
       <div className="sidebar-footer">
-        <div className="user-card">
+        <button className="user-card user-card-button" type="button" onClick={onOpenMyPage}>
           <div className="avatar">{avatarLabel}</div>
           <div className="user-info">
             <div className="name">{displayName}</div>
             <div className="role">{displayRole}</div>
           </div>
-        </div>
-        <button className="sidebar-logout-btn" type="button" onClick={onLogout}>로그아웃</button>
-        <div className="theme-card">
-          <div>
-            <div className="theme-card-label">테마 모드</div>
-            <div className="theme-card-mode">{theme === 'light' ? '라이트 모드' : '다크 모드'}</div>
-          </div>
-          <label className="theme-switch">
-            <input
-              type="checkbox"
-              checked={theme === 'light'}
-              onChange={() => setTheme((prev) => (prev === 'light' ? 'dark' : 'light'))}
-              aria-label="라이트 모드 전환"
-            />
-            <span className="theme-slider"></span>
-          </label>
-        </div>
+          <span className="user-card-arrow">›</span>
+        </button>
       </div>
     </div>
   );

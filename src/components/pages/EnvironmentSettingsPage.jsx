@@ -18,7 +18,7 @@ function readInitialState() {
   }
 }
 
-export default function EnvironmentSettingsPage({ languages, onSave }) {
+export default function EnvironmentSettingsPage({ languages, onSave, embedded = false }) {
   const [settings, setSettings] = useState(readInitialState);
 
   function updateField(key, value) {
@@ -30,12 +30,8 @@ export default function EnvironmentSettingsPage({ languages, onSave }) {
     onSave?.('\ud658\uacbd \uc124\uc815\uc744 \uc800\uc7a5\ud588\uc2b5\ub2c8\ub2e4.');
   }
 
-  return (
-    <div className="page active">
-      <div className="section-header">
-        <div className="section-title">{'\ud658\uacbd \uc124\uc815'}</div>
-      </div>
-
+  const content = (
+    <>
       <div className="panel">
         <div className="panel-title">{'\uae30\ubcf8 \uc791\uc5c5 \ud658\uacbd'}</div>
         <div className="form-grid">
@@ -89,6 +85,19 @@ export default function EnvironmentSettingsPage({ languages, onSave }) {
           </div>
         </div>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="mypage-embedded-stack">{content}</div>;
+  }
+
+  return (
+    <div className="page active">
+      <div className="section-header">
+        <div className="section-title">{'\ud658\uacbd \uc124\uc815'}</div>
+      </div>
+      {content}
     </div>
   );
 }

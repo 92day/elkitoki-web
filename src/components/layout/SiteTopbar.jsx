@@ -5,7 +5,7 @@
         <div className="site-badge">
           <div className="icon">{'🏗️'}</div>
           <div>
-            <div className="site-name">{'03131200'}</div>
+            <div className="site-name">{'03131630'}</div>
             <div className="site-sub">{'서울 마포구 · 공정률 67% · 현장코드 #LGEDX-2026-92'}</div>
           </div>
         </div>

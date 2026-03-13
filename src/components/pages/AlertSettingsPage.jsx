@@ -18,7 +18,7 @@ function readInitialState() {
   }
 }
 
-export default function AlertSettingsPage({ onSave }) {
+export default function AlertSettingsPage({ onSave, embedded = false }) {
   const [settings, setSettings] = useState(readInitialState);
 
   function updateField(key, value) {
@@ -30,12 +30,8 @@ export default function AlertSettingsPage({ onSave }) {
     onSave?.('\uc54c\ub9bc \uc124\uc815\uc744 \uc800\uc7a5\ud588\uc2b5\ub2c8\ub2e4.');
   }
 
-  return (
-    <div className="page active">
-      <div className="section-header">
-        <div className="section-title">{'\uc54c\ub9bc \uc124\uc815'}</div>
-      </div>
-
+  const content = (
+    <>
       <div className="split-grid settings-grid">
         <div className="panel">
           <div className="panel-title">{'\uc54c\ub9bc \ucc44\ub110 \uc124\uc815'}</div>
@@ -89,6 +85,19 @@ export default function AlertSettingsPage({ onSave }) {
           <div>{`- ${settings.vibrationAlerts ? '\uc9c4\ub3d9 \uc54c\ub9bc \ud65c\uc131\ud654' : '\uc9c4\ub3d9 \uc54c\ub9bc \ube44\ud65c\uc131\ud654'}`}</div>
         </div>
       </div>
+    </>
+  );
+
+  if (embedded) {
+    return <div className="mypage-embedded-stack">{content}</div>;
+  }
+
+  return (
+    <div className="page active">
+      <div className="section-header">
+        <div className="section-title">{'\uc54c\ub9bc \uc124\uc815'}</div>
+      </div>
+      {content}
     </div>
   );
 }
