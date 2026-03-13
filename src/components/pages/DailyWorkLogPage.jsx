@@ -6,6 +6,8 @@
   handleCreateManualLog,
   handleDeleteReport,
   savingManualLog,
+  handleGenerateSummary,
+  generatingSummary,
 }) {
   return (
     <div className="page active">
@@ -16,7 +18,12 @@
       <div className="panel">
         <div className="panel-title">🧠 오늘의 요약 (AI)</div>
         <div className="report-preview" style={{ minHeight: 120, whiteSpace: 'pre-wrap' }}>
-          {todaySummary?.summary_text || '저장된 오늘 요약이 없습니다. AI 요약 브랜치에서 자동 요약 생성 기능을 연결할 예정입니다.'}
+          {todaySummary?.summary_text || '저장된 오늘 요약이 없습니다. 버튼을 눌러 소통 로그를 요약해 보세요.'}
+        </div>
+        <div className="button-row" style={{ marginTop: 12 }}>
+          <button className="btn-primary react-btn-auto" onClick={handleGenerateSummary} disabled={generatingSummary} type="button">
+            {generatingSummary ? '요약 생성 중...' : '요약 생성'}
+          </button>
         </div>
       </div>
 

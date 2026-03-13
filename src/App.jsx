@@ -8,7 +8,7 @@ import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, W
 import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
 import { AlertSettingsPage, AlertsPage, DailyWorkLogPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkerCallPage, WorkersPage, ZonesPage } from './components/pages';
-import { createAlert, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchTodaySummary, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
+import { createAlert, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchTodaySummary, fetchWeather, fetchWorkers, generateTodaySummary, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 export default function App() {
   const apiBase = useMemo(() => getApiBase(), []);
@@ -32,6 +32,7 @@ export default function App() {
   const [todaySummary, setTodaySummary] = useState(null);
   const [manualLogText, setManualLogText] = useState('');
   const [savingManualLog, setSavingManualLog] = useState(false);
+  const [generatingSummary, setGeneratingSummary] = useState(false);
   const [callingWorker, setCallingWorker] = useState('');
   const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
@@ -457,6 +458,18 @@ export default function App() {
     }
   }
 
+  async function handleGenerateSummary() {
+    try {
+      setGeneratingSummary(true);
+      const summary = await generateTodaySummary(apiBase);
+      setTodaySummary(summary || null);
+      setMessage('오늘의 요약을 생성했습니다.');
+    } catch (error) {
+      setMessage(`오늘의 요약 생성에 실패했습니다: ${error.message}`);
+    } finally {
+      setGeneratingSummary(false);
+    }
+  }
   async function handleCreateManualLog() {
     const text = manualLogText.trim();
     if (!text) {
@@ -658,6 +671,8 @@ export default function App() {
         handleCreateManualLog={handleCreateManualLog}
         handleDeleteReport={handleDeleteReport}
         savingManualLog={savingManualLog}
+        handleGenerateSummary={handleGenerateSummary}
+        generatingSummary={generatingSummary}
       />
     );
   }
@@ -731,6 +746,7 @@ export default function App() {
     </div>
   );
 }
+
 
 
 
