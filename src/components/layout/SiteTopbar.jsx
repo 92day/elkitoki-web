@@ -1,25 +1,19 @@
-export default function SiteTopbar({ wsConnected, clock, dateText, currentUser, onLogout }) {
+﻿export default function SiteTopbar({ wsConnected, clock, dateText }) {
   return (
     <div className="topbar">
       <div className="topbar-left">
         <div className="site-badge">
-          <div className="icon">{'\ud83c\udfd7\ufe0f'}</div>
+          <div className="icon">{'🏗️'}</div>
           <div>
             <div className="site-name">{'202603121700'}</div>
-            <div className="site-sub">{'\uc11c\uc6b8 \ub9c8\ud3ec\uad6c \u00b7 \uacf5\uc815\ub960 67% \u00b7 \ud604\uc7a5\ucf54\ub4dc #LGEDX-2026-92'}</div>
+            <div className="site-sub">{'서울 마포구 · 공정률 67% · 현장코드 #LGEDX-2026-92'}</div>
           </div>
         </div>
         <div className="divider-v"></div>
-        <div className="status-pill"><div className="dot"></div>{'\uc815\uc0c1 \uc6b4\uc601 \uc911'}</div>
+        <div className="status-pill"><div className="dot"></div>{'정상 운영 중'}</div>
       </div>
       <div className="topbar-right">
-        {currentUser && (
-          <div className="topbar-user-chip">
-            <span className="topbar-user-name">{currentUser.name}</span>
-            <button className="topbar-logout-btn" type="button" onClick={onLogout}>{'\ub85c\uadf8\uc544\uc6c3'}</button>
-          </div>
-        )}
-        <div className={`ws-status ${wsConnected ? 'connected' : ''}`}>{wsConnected ? '\u25cf \uc11c\ubc84 \uc5f0\uacb0\ub428' : '\u25cf \uc11c\ubc84 \uc5f0\uacb0 \uc911...'}</div>
+        <div className={`ws-status ${wsConnected ? 'connected' : ''}`}>{wsConnected ? '● 서버 연결됨' : '● 서버 연결 중...'}</div>
         <div className="time-display"><div className="time">{clock}</div><div style={{ fontSize: 11, color: 'var(--muted)' }}>{dateText}</div></div>
       </div>
     </div>

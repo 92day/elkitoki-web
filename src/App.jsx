@@ -5,7 +5,7 @@ import useClockDisplay from './hooks/useClockDisplay';
 import useSensorStream from './hooks/useSensorStream';
 import './App.css';
 import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_ROLE_OPTIONS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
-import { formatShiftDuration, formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
+import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
 import { AlertSettingsPage, AlertsPage, DailyWorkLogPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkersPage, ZonesPage } from './components/pages';
 import { createAlert, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchTodaySummary, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
@@ -554,7 +554,6 @@ export default function App() {
         WORKER_STATUS_LABELS={WORKER_STATUS_LABELS}
         handleUpdateWorkerStatus={handleUpdateWorkerStatus}
         handleDeleteWorker={handleDeleteWorker}
-        formatShiftDuration={formatShiftDuration}
         workerRoleOptions={WORKER_ROLE_OPTIONS}
       />
     );
@@ -673,7 +672,7 @@ export default function App() {
 
   return (
     <div className="ipad-shell">
-      <SiteTopbar wsConnected={wsConnected} clock={clock} dateText={dateText} currentUser={currentUser} onLogout={handleLogout} />
+      <SiteTopbar wsConnected={wsConnected} clock={clock} dateText={dateText} />
       <div className="main">
         <SidebarNav
           navSections={NAV_SECTIONS}
@@ -683,6 +682,7 @@ export default function App() {
           setTheme={setTheme}
           setActivePage={setActivePage}
           currentUser={currentUser}
+          onLogout={handleLogout}
         />
         <div className="content">
           <div className="react-message-bar">{message}</div>
@@ -692,6 +692,9 @@ export default function App() {
     </div>
   );
 }
+
+
+
 
 
 

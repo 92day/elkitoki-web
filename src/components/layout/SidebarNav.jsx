@@ -1,7 +1,7 @@
-﻿export default function SidebarNav({ navSections, activePage, alertsCount, theme, setTheme, setActivePage, currentUser }) {
-  const displayName = currentUser?.name || '\uad6c\uc774\uc77c';
-  const displayRole = currentUser?.role === 'site_manager' ? '\uc18c\uc7a5' : (currentUser?.role || '\uc18c\uc7a5');
-  const avatarLabel = displayName?.trim()?.charAt(0) || '\uad6c';
+﻿export default function SidebarNav({ navSections, activePage, alertsCount, theme, setTheme, setActivePage, currentUser, onLogout }) {
+  const displayName = currentUser?.name || '구이일';
+  const displayRole = currentUser?.role === 'site_manager' ? '소장' : (currentUser?.role || '소장');
+  const avatarLabel = displayName?.trim()?.charAt(0) || '구';
 
   return (
     <div className="sidebar">
@@ -40,6 +40,7 @@
             <div className="role">{displayRole}</div>
           </div>
         </div>
+        <button className="sidebar-logout-btn" type="button" onClick={onLogout}>로그아웃</button>
         <div className="theme-card">
           <div>
             <div className="theme-card-label">테마 모드</div>

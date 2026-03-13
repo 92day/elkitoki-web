@@ -456,10 +456,6 @@
 }
 
 
-.worker-vital-main {
-  font-weight: 700;
-  color: var(--text);
-}
 
 
 .recorder-box-spaced {
@@ -669,3 +665,23 @@
     justify-content: center;
   }
 }
+
+.sidebar-logout-btn {
+  width: 100%;
+  border: 1px solid rgba(245, 166, 35, 0.24);
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: rgba(245, 166, 35, 0.08);
+  color: var(--warning-700, #c77b12);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.sidebar-logout-btn:hover {
+  background: rgba(245, 166, 35, 0.14);
+  border-color: rgba(245, 166, 35, 0.34);
+}
+
+

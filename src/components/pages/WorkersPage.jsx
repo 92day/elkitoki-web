@@ -10,7 +10,6 @@
   WORKER_STATUS_LABELS,
   handleUpdateWorkerStatus,
   handleDeleteWorker,
-  formatShiftDuration,
   workerRoleOptions,
 }) {
   return (
@@ -68,8 +67,6 @@
               <th>이름 / 직책</th>
               <th>연락처</th>
               <th>배치 구역</th>
-              <th>노동시간</th>
-              <th>심박수</th>
               <th>상태</th>
               <th>관리</th>
             </tr>
@@ -77,12 +74,11 @@
           <tbody>
             {workers.length === 0 && (
               <tr>
-                <td colSpan="7" className="table-empty">등록된 작업자가 없습니다.</td>
+                <td colSpan="5" className="table-empty">등록된 작업자가 없습니다.</td>
               </tr>
             )}
             {workers.map((worker) => {
               const zone = getZoneMeta(worker.zone_id);
-              const heartRate = typeof worker.heart_rate === 'number' ? `${worker.heart_rate} bpm` : '대기 중';
               return (
                 <tr key={worker.id}>
                   <td>
@@ -96,14 +92,6 @@
                   </td>
                   <td>{worker.phone || '-'}</td>
                   <td>{zone ? `${zone.name} · ${zone.description}` : '미배치'}</td>
-                  <td>
-                    <div className="worker-vital-main">{formatShiftDuration(worker.shift_started_at)}</div>
-                    <div className="table-sub">{worker.shift_started_at ? '작업 시작 기준' : '시작 대기'}</div>
-                  </td>
-                  <td>
-                    <div className="worker-vital-main">{heartRate}</div>
-                    <div className="table-sub">센서 연동값</div>
-                  </td>
                   <td><span className={`status-tag ${worker.status}`}>{WORKER_STATUS_LABELS[worker.status] || worker.status}</span></td>
                   <td>
                     <div className="table-action-stack">
