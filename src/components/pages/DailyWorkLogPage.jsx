@@ -1,4 +1,6 @@
-﻿export default function DailyWorkLogPage({
+﻿import { useState } from 'react';
+
+export default function DailyWorkLogPage({
   todaySummary,
   todayReports,
   manualLogText,
@@ -9,6 +11,12 @@
   handleGenerateSummary,
   generatingSummary,
 }) {
+  const [showSummaryModal, setShowSummaryModal] = useState(false);
+  const summaryText = todaySummary?.summary_text || '저장된 오늘 요약이 없습니다. 버튼을 눌러 소통 로그를 요약해 보세요.';
+  const summaryUpdatedAt = todaySummary?.updated_at
+    ? new Date(todaySummary.updated_at).toLocaleString('ko-KR')
+    : null;
+
   return (
     <div className="page active">
       <div className="section-header">
@@ -17,9 +25,10 @@
 
       <div className="panel">
         <div className="panel-title">🧠 오늘의 요약 (AI)</div>
-        <div className="report-preview" style={{ minHeight: 120, whiteSpace: 'pre-wrap' }}>
-          {todaySummary?.summary_text || '저장된 오늘 요약이 없습니다. 버튼을 눌러 소통 로그를 요약해 보세요.'}
-        </div>
+        <button className="summary-preview-card react-btn-auto" type="button" onClick={() => setShowSummaryModal(true)}>
+          <div className="summary-preview-text">{summaryText}</div>
+          <div className="summary-preview-hint">클릭해서 크게 보기</div>
+        </button>
         <div className="button-row" style={{ marginTop: 12 }}>
           <button className="btn-primary react-btn-auto" onClick={handleGenerateSummary} disabled={generatingSummary} type="button">
             {generatingSummary ? '요약 생성 중...' : '요약 생성'}
@@ -72,6 +81,23 @@
           ))}
         </div>
       </div>
+
+      {showSummaryModal && (
+        <div className="photo-modal-overlay" onClick={() => setShowSummaryModal(false)}>
+          <div className="summary-modal-dialog" onClick={(event) => event.stopPropagation()}>
+            <div className="photo-modal-head-react">
+              <div>
+                <div className="section-title">오늘의 요약 전체 보기</div>
+                <div className="table-sub">{summaryUpdatedAt ? `최근 생성: ${summaryUpdatedAt}` : '아직 생성된 요약이 없습니다.'}</div>
+              </div>
+              <button className="photo-modal-close-react react-btn-auto" type="button" onClick={() => setShowSummaryModal(false)}>
+                닫기
+              </button>
+            </div>
+            <div className="summary-modal-body">{summaryText}</div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
