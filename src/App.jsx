@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+﻿import { useEffect, useMemo, useState } from 'react';
 import useSpeechRecognition from './hooks/useSpeechRecognition';
 import useThemePreference from './hooks/useThemePreference';
 import useClockDisplay from './hooks/useClockDisplay';
@@ -61,6 +61,7 @@ export default function App() {
   const wsConnected = useSensorStream(wsBase, setSensors, setSensorLog);
 
   const visibleReports = reports.filter((report) => !isLegacyPlaceholder(report));
+  const translationReports = visibleReports.filter((report) => report?.entry_type === 'translation');
   const workerCallLogs = visibleReports.filter((report) => (report?.text_content || '').startsWith('[작업자 호출]'));
   const activeWorkers = workers.filter((worker) => worker.status === 'work');
   const zoneCounts = workers.reduce((accumulator, worker) => {
@@ -148,7 +149,7 @@ export default function App() {
       const data = await fetchWeather(apiBase);
       setWeather(data);
     } catch (error) {
-      setMessage(`날씨 정보를 불러오지 못했습니다: ${error.message}`);
+      setMessage(`?좎뵪 ?뺣낫瑜?遺덈윭?ㅼ? 紐삵뻽?듬땲?? ${error.message}`);
     }
   }
 
@@ -172,26 +173,26 @@ export default function App() {
       try {
         if (activePage === 'dashboard') {
           await loadDashboard();
-          setMessage('대시보드 데이터가 최신 상태입니다.');
+          setMessage('??쒕낫???곗씠?곌? 理쒖떊 ?곹깭?낅땲??');
         }
         if (activePage === 'workers') await loadWorkers();
         if (activePage === 'zones') await loadWorkers();
-        if (activePage === 'progress') setMessage('공정 진행률을 확인하세요.');
+        if (activePage === 'progress') setMessage('怨듭젙 吏꾪뻾瑜좎쓣 ?뺤씤?섏꽭??');
         if (activePage === 'alerts') await loadAlerts();
         if (activePage === 'report') {
           await loadReports();
-          setMessage('실시간 번역기 화면입니다.');
+          setMessage('?ㅼ떆媛?踰덉뿭湲??붾㈃?낅땲??');
         }
         if (activePage === 'worker-call') {
           await loadReports();
-          setMessage('작업자를 호출하고 호출 로그를 확인하세요.');
+          setMessage('?묒뾽?먮? ?몄텧?섍퀬 ?몄텧 濡쒓렇瑜??뺤씤?섏꽭??');
         }
         if (activePage === 'daily-log') await Promise.all([loadReports(), loadTodaySummary()]);
         if (activePage === 'photos') await loadPhotos();
         if (activePage === 'settings-alert') setMessage('\uc54c\ub9bc \uc124\uc815\uc744 \uc870\uc815\ud558\uc138\uc694.');
         if (activePage === 'settings-env') setMessage('\ud658\uacbd \uc124\uc815\uc744 \uc870\uc815\ud558\uc138\uc694.');
       } catch (error) {
-        setMessage(`데이터를 불러오지 못했습니다: ${error.message}`);
+        setMessage(`?곗씠?곕? 遺덈윭?ㅼ? 紐삵뻽?듬땲?? ${error.message}`);
       }
     };
     run();
@@ -207,7 +208,7 @@ export default function App() {
   useEffect(() => {
     if (!currentUser) return;
     if (activePage === 'photos') {
-      loadPhotos().catch((error) => setMessage(`현장 사진을 불러오지 못했습니다: ${error.message}`));
+      loadPhotos().catch((error) => setMessage(`?꾩옣 ?ъ쭊??遺덈윭?ㅼ? 紐삵뻽?듬땲?? ${error.message}`));
     }
   }, [photoZone]);
 
@@ -229,14 +230,14 @@ export default function App() {
         if (!cancelled) {
           setPhotoAnalysisKo((prev) => ({
             ...prev,
-            [selectedPhoto.id]: data.translated_text || '한국어 번역 결과가 없습니다.',
+            [selectedPhoto.id]: data.translated_text || '?쒓뎅??踰덉뿭 寃곌낵媛 ?놁뒿?덈떎.',
           }));
         }
       } catch (error) {
         if (!cancelled) {
           setPhotoAnalysisKo((prev) => ({
             ...prev,
-            [selectedPhoto.id]: `한국어 번역을 불러오지 못했습니다: ${error.message}`,
+            [selectedPhoto.id]: `?쒓뎅??踰덉뿭??遺덈윭?ㅼ? 紐삵뻽?듬땲?? ${error.message}`,
           }));
         }
       } finally {
@@ -284,7 +285,7 @@ export default function App() {
 
   async function handleCreateWorker() {
     if (!newWorker.name.trim()) {
-      setMessage('작업자 이름을 입력해 주세요.');
+      setMessage('?묒뾽???대쫫???낅젰??二쇱꽭??');
       return;
     }
     try {
@@ -298,9 +299,9 @@ export default function App() {
       setNewWorker({ name: '', role: '', phone: '', zone_id: '' });
       setShowWorkerForm(false);
       await loadWorkers();
-      setMessage('작업자를 등록했습니다.');
+      setMessage('?묒뾽?먮? ?깅줉?덉뒿?덈떎.');
     } catch (error) {
-      setMessage(`작업자 등록에 실패했습니다: ${error.message}`);
+      setMessage(`?묒뾽???깅줉???ㅽ뙣?덉뒿?덈떎: ${error.message}`);
     }
   }
 
@@ -308,26 +309,26 @@ export default function App() {
     try {
       await updateWorkerStatus(apiBase, workerId, status);
       await loadWorkers();
-      setMessage('작업자 상태를 변경했습니다.');
+      setMessage('?묒뾽???곹깭瑜?蹂寃쏀뻽?듬땲??');
     } catch (error) {
-      setMessage(`작업자 상태 변경에 실패했습니다: ${error.message}`);
+      setMessage(`?묒뾽???곹깭 蹂寃쎌뿉 ?ㅽ뙣?덉뒿?덈떎: ${error.message}`);
     }
   }
 
   async function handleDeleteWorker(workerId) {
-    if (!window.confirm('이 작업자를 삭제하시겠습니까?')) return;
+    if (!window.confirm('???묒뾽?먮? ??젣?섏떆寃좎뒿?덇퉴?')) return;
     try {
       await removeWorker(apiBase, workerId);
       await loadWorkers();
-      setMessage('작업자를 삭제했습니다.');
+      setMessage('?묒뾽?먮? ??젣?덉뒿?덈떎.');
     } catch (error) {
-      setMessage(`작업자 삭제에 실패했습니다: ${error.message}`);
+      setMessage(`?묒뾽????젣???ㅽ뙣?덉뒿?덈떎: ${error.message}`);
     }
   }
 
   async function handleCreateAlert() {
     if (!newAlert.message.trim()) {
-      setMessage('알림 내용을 입력해 주세요.');
+      setMessage('?뚮┝ ?댁슜???낅젰??二쇱꽭??');
       return;
     }
     try {
@@ -340,9 +341,9 @@ export default function App() {
       setNewAlert({ level: 'high', source: '', message: '', zone_id: '' });
       setShowAlertForm(false);
       await loadAlerts();
-      setMessage('안전 알림을 등록했습니다.');
+      setMessage('?덉쟾 ?뚮┝???깅줉?덉뒿?덈떎.');
     } catch (error) {
-      setMessage(`안전 알림 등록에 실패했습니다: ${error.message}`);
+      setMessage(`?덉쟾 ?뚮┝ ?깅줉???ㅽ뙣?덉뒿?덈떎: ${error.message}`);
     }
   }
 
@@ -350,9 +351,9 @@ export default function App() {
     try {
       await resolveAlert(apiBase, alertId);
       await loadAlerts();
-      setMessage('알림을 처리 완료했습니다.');
+      setMessage('?뚮┝??泥섎━ ?꾨즺?덉뒿?덈떎.');
     } catch (error) {
-      setMessage(`알림 처리에 실패했습니다: ${error.message}`);
+      setMessage(`?뚮┝ 泥섎━???ㅽ뙣?덉뒿?덈떎: ${error.message}`);
     }
   }
 
@@ -362,7 +363,7 @@ export default function App() {
       return;
     }
     if (!window.speechSynthesis) {
-      setMessage('이 브라우저는 음성 재생을 지원하지 않습니다.');
+      setMessage('??釉뚮씪?곗????뚯꽦 ?ъ깮??吏?먰븯吏 ?딆뒿?덈떎.');
       return;
     }
     window.speechSynthesis.cancel();
@@ -376,12 +377,12 @@ export default function App() {
     const text = (inputText || '').trim();
     const autoSpeak = options.autoSpeak === true;
     if (!text) {
-      setMessage('먼저 말하거나 텍스트를 입력해 주세요.');
+      setMessage('癒쇱? 留먰븯嫄곕굹 ?띿뒪?몃? ?낅젰??二쇱꽭??');
       return;
     }
     if (sourceLanguage === targetLanguage) {
       setTranslatedText(text);
-      setMessage('같은 언어로 선택되어 원문을 그대로 표시했습니다.');
+      setMessage('媛숈? ?몄뼱濡??좏깮?섏뼱 ?먮Ц??洹몃?濡??쒖떆?덉뒿?덈떎.');
       if (autoSpeak) {
         speakTranslatedText(text);
       }
@@ -392,12 +393,12 @@ export default function App() {
       const data = await translateText(apiBase, { text, source_language: sourceLanguage, target_language: targetLanguage });
       const nextTranslatedText = data.translated_text || '';
       setTranslatedText(nextTranslatedText);
-      setMessage(autoSpeak ? `${targetMeta.label} 번역과 음성 재생이 완료되었습니다.` : `${targetMeta.label} 번역이 완료되었습니다.`);
+      setMessage(autoSpeak ? `${targetMeta.label} 踰덉뿭怨??뚯꽦 ?ъ깮???꾨즺?섏뿀?듬땲??` : `${targetMeta.label} 踰덉뿭???꾨즺?섏뿀?듬땲??`);
       if (autoSpeak) {
         speakTranslatedText(nextTranslatedText);
       }
     } catch (error) {
-      setMessage(`번역에 실패했습니다: ${error.message}`);
+      setMessage(`踰덉뿭???ㅽ뙣?덉뒿?덈떎: ${error.message}`);
     } finally {
       setTranslating(false);
     }
@@ -405,13 +406,13 @@ export default function App() {
 
   function handlePressToTalkStart() {
     if (!speech.isSupported) {
-      setMessage('이 브라우저는 음성 인식을 지원하지 않습니다.');
+      setMessage('??釉뚮씪?곗????뚯꽦 ?몄떇??吏?먰븯吏 ?딆뒿?덈떎.');
       return;
     }
     setAutoTranslateAfterSpeech(true);
     setSourceText('');
     setTranslatedText('');
-    setMessage('버튼을 누르고 있는 동안 음성을 인식합니다.');
+    setMessage('踰꾪듉???꾨Ⅴ怨??덈뒗 ?숈븞 ?뚯꽦???몄떇?⑸땲??');
     speech.start();
   }
 
@@ -428,7 +429,7 @@ export default function App() {
     setSourceText('');
     setTranslatedText('');
     setRecordSeconds(0);
-    setMessage('실시간 번역 입력을 초기화했습니다.');
+    setMessage('?ㅼ떆媛?踰덉뿭 ?낅젰??珥덇린?뷀뻽?듬땲??');
   }
 
   async function handleSaveWalkie() {
@@ -443,13 +444,14 @@ export default function App() {
         text_content: text,
         translated_text: translatedText.trim(),
         source_language: sourceLanguage,
-        target_language: targetLanguage,        author_name: currentUser?.name || "구이일",
+        target_language: targetLanguage,
+        author_name: currentUser?.name || '구이일',
         entry_type: 'translation',
       });
       await loadReports();
-      setMessage('전달 기록을 저장했습니다.');
+      setMessage('번역 기록을 저장했습니다.');
     } catch (error) {
-      setMessage(`전달 기록 저장에 실패했습니다: ${error.message}`);
+      setMessage(`번역 기록 저장에 실패했습니다: ${error.message}`);
     } finally {
       setSavingReport(false);
     }
@@ -467,18 +469,20 @@ export default function App() {
         text_content: text,
         translated_text: '',
         source_language: 'ko',
-        target_language: 'ko',        author_name: currentUser?.name || "구이일",
+        target_language: 'ko',
+        author_name: currentUser?.name || '구이일',
         entry_type: 'manual',
       });
       setManualLogText('');
       await loadReports();
-      setMessage('수동 작업 기록을 저장했습니다.');
+      setMessage('수동 기록을 저장했습니다.');
     } catch (error) {
-      setMessage(`수동 작업 기록 저장에 실패했습니다: ${error.message}`);
+      setMessage(`수동 기록 저장에 실패했습니다: ${error.message}`);
     } finally {
       setSavingManualLog(false);
     }
   }
+
   async function handleCallWorker(workerLabel) {
     try {
       setCallingWorker(workerLabel);
@@ -486,7 +490,8 @@ export default function App() {
         text_content: '[작업자 호출] ' + workerLabel + ' 호출',
         translated_text: '',
         source_language: 'ko',
-        target_language: 'ko',        author_name: currentUser?.name || "구이일",
+        target_language: 'ko',
+        author_name: currentUser?.name || '구이일',
         entry_type: 'manual',
       });
       await loadReports();
@@ -497,15 +502,14 @@ export default function App() {
       setCallingWorker('');
     }
   }
-
   async function handleDeleteReport(reportId) {
-    if (!window.confirm('이 전달 기록을 삭제하시겠습니까?')) return;
+    if (!window.confirm('???꾨떖 湲곕줉????젣?섏떆寃좎뒿?덇퉴?')) return;
     try {
       await removeReport(apiBase, reportId);
       await loadReports();
-      setMessage('전달 기록을 삭제했습니다.');
+      setMessage('?꾨떖 湲곕줉????젣?덉뒿?덈떎.');
     } catch (error) {
-      setMessage(`전달 기록 삭제에 실패했습니다: ${error.message}`);
+      setMessage(`?꾨떖 湲곕줉 ??젣???ㅽ뙣?덉뒿?덈떎: ${error.message}`);
     }
   }
 
@@ -518,9 +522,9 @@ export default function App() {
         await uploadPhoto(apiBase, file, photoZone);
       }
       await loadPhotos();
-      setMessage('현장 사진 업로드를 완료했습니다.');
+      setMessage('?꾩옣 ?ъ쭊 ?낅줈?쒕? ?꾨즺?덉뒿?덈떎.');
     } catch (error) {
-      setMessage(`현장 사진 업로드에 실패했습니다: ${error.message}`);
+      setMessage(`?꾩옣 ?ъ쭊 ?낅줈?쒖뿉 ?ㅽ뙣?덉뒿?덈떎: ${error.message}`);
     } finally {
       setUploadingPhotos(false);
       event.target.value = '';
@@ -528,22 +532,22 @@ export default function App() {
   }
 
   async function handleDeletePhoto(photoId) {
-    if (!window.confirm('이 사진을 삭제하시겠습니까?')) return;
+    if (!window.confirm('???ъ쭊????젣?섏떆寃좎뒿?덇퉴?')) return;
     try {
       await removePhoto(apiBase, photoId);
       await loadPhotos();
-      setMessage('현장 사진을 삭제했습니다.');
+      setMessage('?꾩옣 ?ъ쭊????젣?덉뒿?덈떎.');
     } catch (error) {
-      setMessage(`현장 사진 삭제에 실패했습니다: ${error.message}`);
+      setMessage(`?꾩옣 ?ъ쭊 ??젣???ㅽ뙣?덉뒿?덈떎: ${error.message}`);
     }
   }
 
   const weatherVisual = getWeatherVisual(weather?.weather_code, weather?.is_day);
-  const weatherTemp = typeof weather?.temperature_c === 'number' ? `${weather.temperature_c.toFixed(1)}°C` : '--°C';
+  const weatherTemp = typeof weather?.temperature_c === 'number' ? `${weather.temperature_c.toFixed(1)}째C` : '--째C';
   const weatherHumidity = typeof weather?.humidity_pct === 'number' ? `${Math.round(weather.humidity_pct)}%` : '--%';
   const weatherWind = typeof weather?.wind_speed_ms === 'number' ? `${weather.wind_speed_ms.toFixed(1)}m/s` : '--m/s';
   const weatherSunset = weather?.sunset_time || '--:--';
-  const currentTemp = typeof sensors.temperature?.value === 'number' ? `${sensors.temperature.value.toFixed(1)}°` : '—';
+  const currentTemp = typeof sensors.temperature?.value === 'number' ? (sensors.temperature.value.toFixed(1) + '°C') : '--°C';
 
   function renderDashboardPage() {
     return (
@@ -627,7 +631,7 @@ export default function App() {
         handleResetWalkie={handleResetWalkie}
         handlePressToTalkStart={handlePressToTalkStart}
         handlePressToTalkEnd={handlePressToTalkEnd}
-        todayReports={visibleReports}
+        todayReports={translationReports}
         handleDeleteReport={handleDeleteReport}
       />
     );
@@ -727,6 +731,10 @@ export default function App() {
     </div>
   );
 }
+
+
+
+
 
 
 

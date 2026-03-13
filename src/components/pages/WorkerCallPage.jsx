@@ -1,4 +1,4 @@
-function formatCallLogText(text) {
+﻿function formatCallLogText(text) {
   if (!text) return '';
   return text.replace(/^\[작업자 호출\]\s*/, '');
 }
@@ -16,7 +16,7 @@ export default function WorkerCallPage({
       </div>
 
       <div className="panel">
-        <div className="panel-title">📢 작업자 호출</div>
+        <div className="panel-title">📟 작업자 호출</div>
         <div className="worker-call-grid">
           <button className="btn-primary worker-call-btn react-btn-auto" type="button" onClick={() => handleCallWorker('작업자 A')} disabled={callingWorker === '작업자 A'}>
             {callingWorker === '작업자 A' ? '호출 중...' : '작업자 A 호출'}
@@ -28,7 +28,7 @@ export default function WorkerCallPage({
       </div>
 
       <div className="panel">
-        <div className="panel-title">📝 호출 로그</div>
+        <div className="panel-title">📒 호출 로그</div>
         <div className="report-list-wrap">
           {callLogs.length === 0 && <div className="table-empty">저장된 호출 로그가 없습니다.</div>}
           {callLogs.map((report) => (
