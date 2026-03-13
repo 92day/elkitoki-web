@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import useSpeechRecognition from './hooks/useSpeechRecognition';
 import useThemePreference from './hooks/useThemePreference';
 import useClockDisplay from './hooks/useClockDisplay';
@@ -7,7 +7,7 @@ import './App.css';
 import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_ROLE_OPTIONS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
 import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { SidebarNav, SiteTopbar } from './components/layout';
-import { AlertSettingsPage, AlertsPage, DailyWorkLogPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkersPage, ZonesPage } from './components/pages';
+import { AlertSettingsPage, AlertsPage, DailyWorkLogPage, DashboardPage, EnvironmentSettingsPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkerCallPage, WorkersPage, ZonesPage } from './components/pages';
 import { createAlert, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchTodaySummary, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 export default function App() {
@@ -32,6 +32,7 @@ export default function App() {
   const [todaySummary, setTodaySummary] = useState(null);
   const [manualLogText, setManualLogText] = useState('');
   const [savingManualLog, setSavingManualLog] = useState(false);
+  const [callingWorker, setCallingWorker] = useState('');
   const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
   const [photoAnalysisKo, setPhotoAnalysisKo] = useState({});
@@ -60,6 +61,7 @@ export default function App() {
   const wsConnected = useSensorStream(wsBase, setSensors, setSensorLog);
 
   const visibleReports = reports.filter((report) => !isLegacyPlaceholder(report));
+  const workerCallLogs = visibleReports.filter((report) => (report?.text_content || '').startsWith('[작업자 호출]'));
   const activeWorkers = workers.filter((worker) => worker.status === 'work');
   const zoneCounts = workers.reduce((accumulator, worker) => {
     if (worker.zone_id) accumulator[worker.zone_id] = (accumulator[worker.zone_id] || 0) + 1;
@@ -178,7 +180,11 @@ export default function App() {
         if (activePage === 'alerts') await loadAlerts();
         if (activePage === 'report') {
           await loadReports();
-          setMessage('실시간 번역 화면입니다.');
+          setMessage('실시간 번역기 화면입니다.');
+        }
+        if (activePage === 'worker-call') {
+          await loadReports();
+          setMessage('작업자를 호출하고 호출 로그를 확인하세요.');
         }
         if (activePage === 'daily-log') await Promise.all([loadReports(), loadTodaySummary()]);
         if (activePage === 'photos') await loadPhotos();
@@ -437,8 +443,7 @@ export default function App() {
         text_content: text,
         translated_text: translatedText.trim(),
         source_language: sourceLanguage,
-        target_language: targetLanguage,
-        author_name: currentUser?.name || '\uad6c\uc774\uc77c',
+        target_language: targetLanguage,        author_name: currentUser?.name || "구이일",
         entry_type: 'translation',
       });
       await loadReports();
@@ -462,8 +467,7 @@ export default function App() {
         text_content: text,
         translated_text: '',
         source_language: 'ko',
-        target_language: 'ko',
-        author_name: currentUser?.name || '구이일',
+        target_language: 'ko',        author_name: currentUser?.name || "구이일",
         entry_type: 'manual',
       });
       setManualLogText('');
@@ -475,6 +479,25 @@ export default function App() {
       setSavingManualLog(false);
     }
   }
+  async function handleCallWorker(workerLabel) {
+    try {
+      setCallingWorker(workerLabel);
+      await createReport(apiBase, {
+        text_content: '[작업자 호출] ' + workerLabel + ' 호출',
+        translated_text: '',
+        source_language: 'ko',
+        target_language: 'ko',        author_name: currentUser?.name || "구이일",
+        entry_type: 'manual',
+      });
+      await loadReports();
+      setMessage(workerLabel + ' 호출 기록을 저장했습니다.');
+    } catch (error) {
+      setMessage('작업자 호출 저장에 실패했습니다: ' + error.message);
+    } finally {
+      setCallingWorker('');
+    }
+  }
+
   async function handleDeleteReport(reportId) {
     if (!window.confirm('이 전달 기록을 삭제하시겠습니까?')) return;
     try {
@@ -610,6 +633,17 @@ export default function App() {
     );
   }
 
+  function renderWorkerCallPage() {
+    return (
+      <WorkerCallPage
+        callLogs={workerCallLogs}
+        callingWorker={callingWorker}
+        handleCallWorker={handleCallWorker}
+        handleDeleteReport={handleDeleteReport}
+      />
+    );
+  }
+
   function renderDailyLogPage() {
     return (
       <DailyWorkLogPage
@@ -659,6 +693,7 @@ export default function App() {
     if (activePage === 'sensors') return renderDashboardPage();
     if (activePage === 'alerts') return renderAlertsPage();
     if (activePage === 'report') return renderReportPage();
+    if (activePage === 'worker-call') return renderWorkerCallPage();
     if (activePage === 'photos') return renderPhotosPage();
     if (activePage === 'daily-log') return renderDailyLogPage();
     if (activePage === 'settings-alert') return renderAlertSettingsPage();

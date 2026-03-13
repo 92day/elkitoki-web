@@ -38,20 +38,23 @@ export const WORKER_ROLE_OPTIONS = ['\uc18c\uc7a5', '\uc548\uc804\uad00\ub9ac\uc
 export const WORKER_STATUS_LABELS = { work: '\uc791\uc5c5 \uc911', rest: '\ud734\uc2dd', absent: '\ubbf8\ucd9c\uadfc' };
 
 export const NAV_SECTIONS = [
-  { title: '\ud604\uc7a5\uad00\ub9ac', items: [
-    { key: 'dashboard', label: '\ud604\ud669 \ub300\uc2dc\ubcf4\ub4dc', icon: '\ud83d\udcca' },
-    { key: 'workers', label: '\uc778\ub825 \uad00\ub9ac', icon: '\ud83d\udc77' },
-    { key: 'zones', label: '\uad6c\uc5ed \ud604\ud669', icon: '\ud83d\uddfa\ufe0f' },
-    { key: 'progress', label: '\uacf5\uc815 \uad00\ub9ac', icon: '\ud83d\udccb' },
+  { title: '\uD604\uC7A5 \uAD00\uB9AC', items: [
+    { key: 'dashboard', label: '\uD604\uD669 \uB300\uC2DC\uBCF4\uB4DC', icon: '📊' },
+    { key: 'workers', label: '\uC778\uB825 \uAD00\uB9AC', icon: '👷' },
+    { key: 'zones', label: '\uAD6C\uC5ED \uD604\uD669', icon: '🗺️' },
+    { key: 'progress', label: '\uACF5\uC815 \uAD00\uB9AC', icon: '📋' },
   ]},
-  { title: '\uae30\ub85d / \uc548\uc804', items: [
-    { key: 'alerts', label: '\uc548\uc804 \uc54c\ub9bc', icon: '\u26a0\ufe0f', countKey: 'alerts' },
-    { key: 'report', label: '\uc2e4\uc2dc\uac04 \ubc88\uc5ed', icon: '\ud83d\udcfb' },
-    { key: 'daily-log', label: '\uc624\ub298\uc758 \uc791\uc5c5\uc77c\uc9c0', icon: '\ud83d\uddd2\ufe0f' },
-    { key: 'photos', label: '\ud604\uc7a5 \uc0ac\uc9c4', icon: '\ud83d\udcf8' },
+  { title: '\uC18C\uD1B5', items: [
+    { key: 'report', label: '\uC2E4\uC2DC\uAC04 \uBC88\uC5ED\uAE30', icon: '📻' },
+    { key: 'worker-call', label: '\uC791\uC5C5\uC790 \uD638\uCD9C', icon: '📢' },
   ]},
-  { title: '\uc124\uc815', items: [
-    { key: 'settings-alert', label: '\uc54c\ub9bc \uc124\uc815', icon: '\ud83d\udd14' },
-    { key: 'settings-env', label: '\ud658\uacbd \uc124\uc815', icon: '\u2699\ufe0f' },
+  { title: '\uAE30\uB85D / \uC548\uC804', items: [
+    { key: 'daily-log', label: '\uC791\uC5C5 \uC77C\uC9C0', icon: '🗒️' },
+    { key: 'photos', label: '\uD604\uC7A5 \uC0AC\uC9C4', icon: '📸' },
+    { key: 'alerts', label: '\uC548\uC804 \uC54C\uB9BC', icon: '⚠️', countKey: 'alerts' },
+  ]},
+  { title: '\uC124\uC815', items: [
+    { key: 'settings-alert', label: '\uC54C\uB9BC \uC124\uC815', icon: '🔔' },
+    { key: 'settings-env', label: '\uD658\uACBD \uC124\uC815', icon: '⚙️' },
   ]},
 ];
