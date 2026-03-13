@@ -27,6 +27,7 @@ export const fetchReports = (apiBase) => apiRequest(apiBase, '/api/reports/');
 export const fetchTodayReports = (apiBase) => apiRequest(apiBase, '/api/reports/today');
 export const fetchTodaySummary = (apiBase) => apiRequest(apiBase, '/api/reports/summary/today');
 export const upsertTodaySummary = (apiBase, payload) => apiRequest(apiBase, '/api/reports/summary/today', { method: 'PUT', body: payload });
+export const generateTodaySummary = (apiBase) => apiRequest(apiBase, '/api/reports/summary/today/generate', { method: 'POST' });
 export const fetchPhotos = (apiBase, zoneId = '') => apiRequest(apiBase, `/api/photos/${zoneId ? `?zone_id=${zoneId}` : ''}`);
 
 export const createWorker = (apiBase, payload) => apiRequest(apiBase, '/api/workers/', { method: 'POST', body: payload });
@@ -52,3 +53,4 @@ export const removePhoto = (apiBase, photoId) => apiRequest(apiBase, `/api/photo
 export const loginUser = (apiBase, payload) => apiRequest(apiBase, '/api/auth/login', { method: 'POST', body: payload });
 export const fetchCurrentUser = (apiBase, token) => apiRequest(apiBase, '/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
 export const logoutUser = (apiBase, token) => apiRequest(apiBase, '/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+
