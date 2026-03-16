@@ -91,7 +91,7 @@ export default function MyPageModal({
               <div className="mypage-theme-card mypage-accessibility-card">
                 <div>
                   <div className="theme-card-label">큰글씨 설정</div>
-                  <div className="theme-card-mode">50+ 시니어를 위한 고가독성 화면</div>
+                  <div className="theme-card-mode">글씨가 큰 고가독성 화면</div>
                   <div className="mypage-setting-help">
                     메뉴, 버튼, 표, 카드 글자가 전반적으로 커지고 간격도 넓어져 더 직관적으로 보입니다.
                   </div>

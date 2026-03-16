@@ -8,6 +8,18 @@ export const ZONES = [
   { id: 3, name: 'C\uad6c\uc5ed', description: '1F-3F', task: '\uace0\uc18c \uc791\uc5c5', risk: 'caution' },
 ];
 
+export const ZONE_NOISE_BY_ID = {
+  1: { decibel: 62, peak: '08:40', status: 'safe' },
+  2: { decibel: 74, peak: '10:15', status: 'caution' },
+  3: { decibel: 83, peak: '14:20', status: 'danger' },
+};
+
+export const NOISE_STATUS_LABELS = {
+  safe: '\uc801\uc815',
+  caution: '\uc8fc\uc758',
+  danger: '\uacbd\uace0',
+};
+
 export const PROGRESS_ITEMS = [
   { name: '\ud1a0\uacf5 \ubc0f \uac00\uc124', pct: 100, color: 'var(--safe)' },
   { name: '\ucca0\uadfc/\uac70\ud478\uc9d1', pct: 78, color: 'var(--safe)' },

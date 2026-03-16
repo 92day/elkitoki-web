@@ -36,7 +36,7 @@
 
         <div className="form-grid">
           <div className="form-group">
-            <label className="form-label">말할 언어</label>
+            <label className="form-label">입력 언어</label>
             <div className="language-select-row">
               <select className="form-select" value={sourceLanguage} onChange={(event) => setSourceLanguage(event.target.value)}>
                 {languages.map((language) => (
@@ -68,7 +68,7 @@
 
         <div className="recorder-box recorder-box-spaced">
           <div className="walkie-language-row">
-            <span><img className="walkie-inline-flag" src={sourceMeta.flagPath} alt={`${sourceMeta.label} flag`} /> 말할 언어: {sourceMeta.label}</span>
+            <span><img className="walkie-inline-flag" src={sourceMeta.flagPath} alt={`${sourceMeta.label} flag`} /> 입력 언어: {sourceMeta.label}</span>
             <span><img className="walkie-inline-flag" src={targetMeta.flagPath} alt={`${targetMeta.label} flag`} /> 번역 언어: {targetMeta.label}</span>
           </div>
 

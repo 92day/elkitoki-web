@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import loginDesignImage from '../../assets/img-src/login design.png';
+import loginLogoImage from '../../assets/img-src/login logo.png';
 
 export default function LoginPage({ loading, error, onLogin, transitionName }) {
   const [username, setUsername] = useState('admin');
@@ -15,51 +17,11 @@ export default function LoginPage({ loading, error, onLogin, transitionName }) {
       <div className="login-layout">
         <section className="login-hero-panel">
           <div className="login-brand">
-            <span className="login-brand-mark" aria-hidden="true">
-              <span className="login-brand-mark-bar brand-bar-left"></span>
-              <span className="login-brand-mark-bar brand-bar-right"></span>
-            </span>
-            <span className="login-brand-name">{'\uc5d8\ud0a4\ud1a0\ud0a4'}</span>
+            <img className="login-brand-image" src={loginLogoImage} alt={'엘키토키 로고'} />
           </div>
 
-          <div className="login-hero-graphic" aria-hidden="true">
-            <div className="login-network network-left">
-              <span className="login-network-line line-1"></span>
-              <span className="login-network-line line-2"></span>
-              <span className="login-network-line line-3"></span>
-              <span className="login-network-node node-1"></span>
-              <span className="login-network-node node-2"></span>
-              <span className="login-network-node node-3"></span>
-              <span className="login-network-node node-4"></span>
-            </div>
-
-            <div className="login-network network-top">
-              <span className="login-network-line line-1"></span>
-              <span className="login-network-line line-2"></span>
-              <span className="login-network-line line-3"></span>
-              <span className="login-network-node node-1 active"></span>
-              <span className="login-network-node node-2"></span>
-              <span className="login-network-node node-3"></span>
-              <span className="login-network-node node-4 active"></span>
-            </div>
-
-            <div className="login-network network-right">
-              <span className="login-network-line line-1"></span>
-              <span className="login-network-line line-2"></span>
-              <span className="login-network-line line-3"></span>
-              <span className="login-network-node node-1"></span>
-              <span className="login-network-node node-2"></span>
-              <span className="login-network-node node-3 active"></span>
-              <span className="login-network-node node-4"></span>
-            </div>
-          </div>
-
-          <div className="login-hero-copy">
-            <div className="login-hero-caption">
-              {'LG\uc804\uc790\uc758 \uacf5\uac10\uc9c0\ub2a5\uc73c\ub85c'}
-              <br />
-              {'\ud604\uc7a5\uc744 \ub354 \uc548\uc804\ud558\uac8c'}
-            </div>
+          <div className="login-hero-graphic">
+            <img className="login-hero-design-image" src={loginDesignImage} alt="" aria-hidden="true" />
           </div>
 
           <div className="login-hero-footer">
