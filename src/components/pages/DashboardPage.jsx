@@ -57,8 +57,8 @@ export default function DashboardPage({
           <div className="panel-title">구역 현황</div>
           <div className="dashboard-zone-overview">
             {ZONES.map((zone) => {
-              const noise = zoneNoiseById?.[zone.id] || { decibel: null, peak: '--:--', status: 'safe' };
-              const fillWidth = Math.min(100, Math.max(0, noise.decibel || 0));
+              const noise = zoneNoiseById?.[zone.id] || { score: null, peak: '--:--', status: 'safe' };
+              const fillWidth = Math.min(100, Math.max(0, noise.score || 0));
 
               return (
                 <div className={`dashboard-zone-card ${noise.status}`} key={zone.id}>
@@ -76,8 +76,8 @@ export default function DashboardPage({
                       <span className="dashboard-zone-kpi-value">{`${zoneCounts[zone.id] || 0}명`}</span>
                     </div>
                     <div className="dashboard-zone-kpi">
-                      <span className="dashboard-zone-kpi-label">소음</span>
-                      <span className="dashboard-zone-kpi-value">{noise.decibel == null ? '--dB' : `${noise.decibel}dB`}</span>
+                      <span className="dashboard-zone-kpi-label">소음지수</span>
+                      <span className="dashboard-zone-kpi-value">{noise.score == null ? '--' : `${noise.score}점`}</span>
                     </div>
                   </div>
 
@@ -123,3 +123,5 @@ export default function DashboardPage({
     </div>
   );
 }
+
+

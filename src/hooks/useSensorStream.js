@@ -1,4 +1,54 @@
-import { useEffect, useState } from 'react';
+﻿import { useEffect, useState } from 'react';
+
+const ZONE_SOUND_FIELDS = {
+  1: 'soundA',
+  2: 'soundB',
+  3: 'soundC',
+};
+
+const NOISE_STALE_MS = 4000;
+
+function classifyNoiseStatus(score) {
+  if (score == null) return 'safe';
+  if (score >= 70) return 'danger';
+  if (score >= 40) return 'caution';
+  return 'safe';
+}
+
+function formatPeakTime(dateValue) {
+  if (!dateValue) return '--:--';
+  const date = typeof dateValue === 'string' ? new Date(dateValue) : dateValue;
+  if (Number.isNaN(date.getTime())) return '--:--';
+  return date.toLocaleTimeString('ko-KR', { hour12: false, hour: '2-digit', minute: '2-digit' });
+}
+
+function coerceNoiseScore(value) {
+  if (typeof value !== 'number' || Number.isNaN(value)) return null;
+  if (value <= 0) return 1;
+  if (value <= 100) return Math.max(1, Math.min(100, Math.round(value)));
+  const scaled = 1 + Math.pow(Math.min(value, 1023) / 1023, 0.58) * 99;
+  return Math.round(scaled);
+}
+
+function buildZoneNoiseById(sensorState, now = new Date()) {
+  const next = {};
+
+  Object.entries(ZONE_SOUND_FIELDS).forEach(([zoneId, fieldName]) => {
+    const cached = sensorState[fieldName];
+    const updatedAt = cached?.updatedAt ? new Date(cached.updatedAt) : null;
+    const isFresh = updatedAt && !Number.isNaN(updatedAt.getTime()) && now - updatedAt <= NOISE_STALE_MS;
+    const score = isFresh ? coerceNoiseScore(cached?.value) : null;
+
+    next[zoneId] = {
+      score,
+      peak: isFresh ? formatPeakTime(updatedAt) : '--:--',
+      status: classifyNoiseStatus(score),
+      updatedAt: isFresh ? cached?.updatedAt : null,
+    };
+  });
+
+  return next;
+}
 
 export default function useSensorStream(wsBase, setSensors, setSensorLog) {
   const [wsConnected, setWsConnected] = useState(false);
@@ -18,11 +68,43 @@ export default function useSensorStream(wsBase, setSensors, setSensorLog) {
           const payload = JSON.parse(event.data);
           if (payload.event === 'sensor' && payload.data) {
             const nextSensor = payload.data;
-            setSensors((prev) => ({ ...prev, [nextSensor.type]: { value: nextSensor.value, unit: nextSensor.unit || '' } }));
+            const timestamp = nextSensor.timestamp || new Date().toISOString();
+
+            setSensors((prev) => {
+              if (nextSensor.kind === 'status') {
+                const next = { ...prev };
+                Object.entries(nextSensor).forEach(([key, value]) => {
+                  if (['kind', 'device', 'timestamp'].includes(key)) return;
+                  next[key] = {
+                    value,
+                    updatedAt: timestamp,
+                    device: nextSensor.device,
+                  };
+                });
+                next.zoneNoiseById = buildZoneNoiseById(next, new Date(timestamp));
+                return next;
+              }
+
+              if (nextSensor.kind === 'event') {
+                const next = {
+                  ...prev,
+                  [`event:${nextSensor.eventType}`]: {
+                    value: nextSensor,
+                    updatedAt: timestamp,
+                    device: nextSensor.device,
+                  },
+                };
+                next.zoneNoiseById = buildZoneNoiseById(next, new Date(timestamp));
+                return next;
+              }
+
+              return prev;
+            });
+
             setSensorLog((prev) => [
               {
-                id: `${Date.now()}-${nextSensor.type}`,
-                text: `[${new Date().toLocaleTimeString('ko-KR', { hour12: false })}] ${nextSensor.type}: ${nextSensor.value}${nextSensor.unit || ''}`,
+                id: `${Date.now()}-${nextSensor.kind || 'sensor'}`,
+                text: `[${new Date().toLocaleTimeString('ko-KR', { hour12: false })}] ${nextSensor.kind || 'sensor'}: ${nextSensor.device || 'unknown'}`,
               },
               ...prev,
             ].slice(0, 40));
@@ -47,3 +129,4 @@ export default function useSensorStream(wsBase, setSensors, setSensorLog) {
 
   return wsConnected;
 }
+

@@ -261,7 +261,7 @@ export default function App() {
 
     const timerId = window.setInterval(() => {
       loadSensors().catch(() => {});
-    }, 2500);
+    }, 800);
 
     return () => window.clearInterval(timerId);
   }, [activePage, currentUser]);
@@ -272,7 +272,7 @@ export default function App() {
 
     const timerId = window.setInterval(() => {
       loadReports().catch(() => {});
-    }, 2500);
+    }, 800);
 
     return () => window.clearInterval(timerId);
   }, [activePage, currentUser]);
@@ -961,6 +961,7 @@ export default function App() {
     </>
   );
 }
+
 
 
 

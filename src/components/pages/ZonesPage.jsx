@@ -19,11 +19,11 @@ export default function ZonesPage({ ZONES, zoneCounts, zoneNoiseById }) {
       </div>
 
       <div className="panel">
-        <div className="panel-title">구역별 소음 데시벨</div>
+        <div className="panel-title">구역별 소음지수</div>
         <div className="zone-noise-grid">
           {ZONES.map((zone) => {
-            const noise = zoneNoiseById?.[zone.id] || { decibel: null, peak: '--:--', status: 'safe' };
-            const fillWidth = Math.min(100, Math.max(0, noise.decibel || 0));
+            const noise = zoneNoiseById?.[zone.id] || { score: null, peak: '--:--', status: 'safe' };
+            const fillWidth = Math.min(100, Math.max(0, noise.score || 0));
 
             return (
               <div className={`zone-noise-card ${noise.status}`} key={`noise-${zone.id}`}>
@@ -36,8 +36,8 @@ export default function ZonesPage({ ZONES, zoneCounts, zoneNoiseById }) {
                 </div>
 
                 <div className="zone-noise-reading">
-                  <span className="zone-noise-value">{noise.decibel == null ? '--' : noise.decibel}</span>
-                  <span className="zone-noise-unit">dB</span>
+                  <span className="zone-noise-value">{noise.score == null ? '--' : noise.score}</span>
+                  <span className="zone-noise-unit">점</span>
                 </div>
 
                 <div className="zone-noise-meter">
@@ -56,3 +56,4 @@ export default function ZonesPage({ ZONES, zoneCounts, zoneNoiseById }) {
     </div>
   );
 }
+
