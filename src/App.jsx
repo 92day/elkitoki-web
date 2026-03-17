@@ -29,7 +29,7 @@ export default function App() {
   const [weather, setWeather] = useState(null);
   const [workers, setWorkers] = useState([]);
   const [alerts, setAlerts] = useState([]);
-  const [sensors, setSensors] = useState({ temperature: null, humidity: null, dust: null, gas: null });
+  const [sensors, setSensors] = useState({ temperature: null, humidity: null, dust: null, gas: null, zoneNoiseById: {} });
   const [sensorLog, setSensorLog] = useState([]);
   const [reports, setReports] = useState([]);
   const [todaySummary, setTodaySummary] = useState(null);
@@ -201,7 +201,7 @@ export default function App() {
 
   async function loadWorkers() { const data = await fetchWorkers(apiBase); setWorkers(Array.isArray(data) ? data : []); }
   async function loadAlerts() { const data = await fetchAlerts(apiBase); setAlerts(Array.isArray(data) ? data : []); }
-  async function loadSensors() { const data = await fetchLatestSensors(apiBase); setSensors(data || { temperature: null, humidity: null, dust: null, gas: null }); }
+  async function loadSensors() { const data = await fetchLatestSensors(apiBase); setSensors(data || { temperature: null, humidity: null, dust: null, gas: null, zoneNoiseById: {} }); }
   async function loadReports() { const data = await fetchTodayReports(apiBase); setReports(Array.isArray(data) ? data : []); }
   async function loadTodaySummary() { const data = await fetchTodaySummary(apiBase); setTodaySummary(data || null); }
   async function loadPhotos() {
@@ -222,7 +222,7 @@ export default function App() {
           setMessage('대시보드 데이터가 최신 상태입니다.');
         }
         if (activePage === 'workers') await loadWorkers();
-        if (activePage === 'zones') await loadWorkers();
+        if (activePage === 'zones') await Promise.all([loadWorkers(), loadSensors()]);
         if (activePage === 'progress') setMessage('공정 진행 현황을 확인하세요.');
         if (activePage === 'alerts') await loadAlerts();
         if (activePage === 'report') {
@@ -255,6 +255,16 @@ export default function App() {
       loadPhotos().catch((error) => setMessage('현장 사진을 불러오지 못했습니다: ' + error.message));
     }
   }, [photoZone]);
+  useEffect(() => {
+    if (!currentUser) return undefined;
+    if (!['dashboard', 'zones'].includes(activePage)) return undefined;
+
+    const timerId = window.setInterval(() => {
+      loadSensors().catch(() => {});
+    }, 800);
+
+    return () => window.clearInterval(timerId);
+  }, [activePage, currentUser]);
 
   useEffect(() => {
     if (!currentUser) return undefined;
@@ -262,7 +272,7 @@ export default function App() {
 
     const timerId = window.setInterval(() => {
       loadReports().catch(() => {});
-    }, 2500);
+    }, 800);
 
     return () => window.clearInterval(timerId);
   }, [activePage, currentUser]);
@@ -741,6 +751,7 @@ export default function App() {
   const weatherWind = typeof weather?.wind_speed_ms === 'number' ? `${weather.wind_speed_ms.toFixed(1)}m/s` : '--m/s';
   const weatherSunset = weather?.sunset_time || '--:--';
   const currentTemp = typeof sensors.temperature?.value === 'number' ? (sensors.temperature.value.toFixed(1) + '°C') : '--°C';
+  const zoneNoiseById = sensors.zoneNoiseById || {};
 
   function renderDashboardPage() {
     return (
@@ -756,6 +767,7 @@ export default function App() {
         currentTemp={currentTemp}
         ZONES={ZONES}
         zoneCounts={zoneCounts}
+        zoneNoiseById={zoneNoiseById}
       />
     );
   }
@@ -780,7 +792,7 @@ export default function App() {
   }
 
   function renderZonesPage() {
-    return <ZonesPage ZONES={ZONES} zoneCounts={zoneCounts} />;
+    return <ZonesPage ZONES={ZONES} zoneCounts={zoneCounts} zoneNoiseById={zoneNoiseById} />;
   }
 
   function renderProgressPage() {
@@ -949,6 +961,8 @@ export default function App() {
     </>
   );
 }
+
+
 
 
 

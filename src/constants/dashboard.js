@@ -1,4 +1,4 @@
-export const THEME_KEY = 'dashboard_theme';
+﻿export const THEME_KEY = 'dashboard_theme';
 export const AUTH_STORAGE_KEY = 'elkitoki_auth_token';
 export const WEATHER_REFRESH_MS = 5 * 60 * 1000;
 
@@ -9,13 +9,13 @@ export const ZONES = [
 ];
 
 export const ZONE_NOISE_BY_ID = {
-  1: { decibel: 62, peak: '08:40', status: 'safe' },
-  2: { decibel: 74, peak: '10:15', status: 'caution' },
-  3: { decibel: 83, peak: '14:20', status: 'danger' },
+  1: { score: 62, peak: '08:40', status: 'safe' },
+  2: { score: 74, peak: '10:15', status: 'caution' },
+  3: { score: 83, peak: '14:20', status: 'danger' },
 };
 
 export const NOISE_STATUS_LABELS = {
-  safe: '\uc801\uc815',
+  safe: '\uc548\uc804',
   caution: '\uc8fc\uc758',
   danger: '\uacbd\uace0',
 };
@@ -62,11 +62,13 @@ export const NAV_SECTIONS = [
   ]},
   { title: '\uAE30\uB85D / \uC548\uC804', items: [
     { key: 'alerts', label: '\uC548\uC804 \uC54C\uB9BC', icon: '⚠️', countKey: 'alerts' },
-    { key: 'daily-log', label: '\uC791\uC5C5 \uC77C\uC9C0', icon: '🗒️' },
-    { key: 'photos', label: '\uD604\uC7A5 \uC0AC\uC9C4', icon: '📸' },
+    { key: 'daily-log', label: '\uC791\uC5C5 \uC77C\uC9C0', icon: '📝' },
+    { key: 'photos', label: '\uD604\uC7A5 \uC0AC\uC9C4', icon: '📷' },
   ]},
   { title: '\uC124\uC815', items: [
     { key: 'settings-alert', label: '\uC54C\uB9BC \uC124\uC815', icon: '🔔' },
     { key: 'settings-env', label: '\uD658\uACBD \uC124\uC815', icon: '⚙️' },
   ]},
 ];
+
+

@@ -1,4 +1,4 @@
-import { NOISE_STATUS_LABELS, ZONE_NOISE_BY_ID } from '../../constants/dashboard';
+﻿import { NOISE_STATUS_LABELS } from '../../constants/dashboard';
 
 export default function DashboardPage({
   weather,
@@ -11,6 +11,7 @@ export default function DashboardPage({
   alerts,
   ZONES,
   zoneCounts,
+  zoneNoiseById,
 }) {
   return (
     <div className="page active">
@@ -20,44 +21,44 @@ export default function DashboardPage({
           <div>
             <div className="weather-temp">{weatherTemp}</div>
             <div className="weather-desc">
-              {weather ? `${weatherVisual.desc} · 옥외` : '날씨 로딩 중 · 옥외'}
+              {weather ? `${weatherVisual.desc} · 서울` : '날씨 정보를 불러오는 중입니다.'}
             </div>
           </div>
         </div>
         <div className="weather-divider"></div>
-        <div className="weather-stat">{'습도'} <span>{weatherHumidity}</span></div>
-        <div className="weather-stat">{'풍속'} <span>{weatherWind}</span></div>
-        <div className="weather-stat">{'일몰'} <span>{weatherSunset}</span></div>
+        <div className="weather-stat">습도 <span>{weatherHumidity}</span></div>
+        <div className="weather-stat">풍속 <span>{weatherWind}</span></div>
+        <div className="weather-stat">일몰 <span>{weatherSunset}</span></div>
       </div>
 
       <div className="kpi-grid kpi-grid-three">
         <div className="kpi-card ok">
-          <div className="kpi-label">{'현장 인원'}</div>
+          <div className="kpi-label">현장 인원</div>
           <div className="kpi-value">{activeWorkers.length || '0'}</div>
-          <div className="kpi-delta">{'작업 중'}</div>
-          <div className="kpi-icon">{'👷'}</div>
+          <div className="kpi-delta">작업 중</div>
+          <div className="kpi-icon">👷</div>
         </div>
         <div className="kpi-card warn">
-          <div className="kpi-label">{'평균 공정률'}</div>
-          <div className="kpi-value">{'67%'}</div>
-          <div className="kpi-delta">{'전체 공종 평균'}</div>
-          <div className="kpi-icon">{'📊'}</div>
+          <div className="kpi-label">평균 공정률</div>
+          <div className="kpi-value">67%</div>
+          <div className="kpi-delta">전체 공종 평균</div>
+          <div className="kpi-icon">📈</div>
         </div>
         <div className="kpi-card bad">
-          <div className="kpi-label">{'미처리 알림'}</div>
+          <div className="kpi-label">미처리 알림</div>
           <div className="kpi-value">{alerts.length || '0'}</div>
-          <div className="kpi-delta">{'즉시 확인 필요'}</div>
-          <div className="kpi-icon">{'⚠️'}</div>
+          <div className="kpi-delta">즉시 확인 필요</div>
+          <div className="kpi-icon">⚠️</div>
         </div>
       </div>
 
       <div className="split-grid dashboard-split-grid">
         <div className="panel">
-          <div className="panel-title">{'구역 현황'}</div>
+          <div className="panel-title">구역 현황</div>
           <div className="dashboard-zone-overview">
             {ZONES.map((zone) => {
-              const noise = ZONE_NOISE_BY_ID[zone.id] || { decibel: 60, peak: '--:--', status: 'safe' };
-              const fillWidth = Math.min(100, noise.decibel);
+              const noise = zoneNoiseById?.[zone.id] || { score: null, peak: '--:--', status: 'safe' };
+              const fillWidth = Math.min(100, Math.max(0, noise.score || 0));
 
               return (
                 <div className={`dashboard-zone-card ${noise.status}`} key={zone.id}>
@@ -71,12 +72,12 @@ export default function DashboardPage({
 
                   <div className="dashboard-zone-metrics">
                     <div className="dashboard-zone-kpi">
-                      <span className="dashboard-zone-kpi-label">{'인원'}</span>
+                      <span className="dashboard-zone-kpi-label">인원</span>
                       <span className="dashboard-zone-kpi-value">{`${zoneCounts[zone.id] || 0}명`}</span>
                     </div>
                     <div className="dashboard-zone-kpi">
-                      <span className="dashboard-zone-kpi-label">{'소음'}</span>
-                      <span className="dashboard-zone-kpi-value">{`${noise.decibel}dB`}</span>
+                      <span className="dashboard-zone-kpi-label">소음지수</span>
+                      <span className="dashboard-zone-kpi-value">{noise.score == null ? '--' : `${noise.score}점`}</span>
                     </div>
                   </div>
 
@@ -95,12 +96,12 @@ export default function DashboardPage({
         </div>
 
         <div className="panel">
-          <div className="panel-title">{'최근 알림'}</div>
+          <div className="panel-title">최근 알림</div>
           <div className="alert-list dashboard-alert-list">
             {alerts.length === 0 && (
               <div className="loading">
                 <div className="spinner"></div>
-                {'표시할 알림이 없습니다.'}
+                실시간 알림이 없습니다.
               </div>
             )}
             {alerts.slice(0, 4).map((alert) => (
@@ -122,3 +123,5 @@ export default function DashboardPage({
     </div>
   );
 }
+
+
