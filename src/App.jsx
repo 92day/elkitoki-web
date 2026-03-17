@@ -266,6 +266,17 @@ export default function App() {
     return () => window.clearInterval(timerId);
   }, [activePage, currentUser]);
 
+
+  useEffect(() => {
+    if (!currentUser) return undefined;
+    if (!['dashboard', 'alerts'].includes(activePage)) return undefined;
+
+    const timerId = window.setInterval(() => {
+      loadAlerts().catch(() => {});
+    }, 1200);
+
+    return () => window.clearInterval(timerId);
+  }, [activePage, currentUser]);
   useEffect(() => {
     if (!currentUser) return undefined;
     if (!['worker-call', 'daily-log'].includes(activePage)) return undefined;
