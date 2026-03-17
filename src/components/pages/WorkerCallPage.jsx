@@ -1,6 +1,13 @@
 ﻿function formatCallLogText(text) {
   if (!text) return '';
-  return text.replace(/^\[작업자 호출\]\s*/, '');
+  return text
+    .replace(/^\[작업자 호출\]\s*/, '')
+    .replace(/^\[작업자 요청\]\s*/, '');
+}
+
+function getCallLogType(text) {
+  if ((text || '').startsWith('[작업자 요청]')) return '작업자 요청';
+  return '작업자 호출';
 }
 
 export default function WorkerCallPage({
@@ -8,6 +15,7 @@ export default function WorkerCallPage({
   callingWorker,
   handleCallWorker,
   handleDeleteReport,
+  handleDeleteWorkerCallLogs,
 }) {
   return (
     <div className="page active">
@@ -28,7 +36,10 @@ export default function WorkerCallPage({
       </div>
 
       <div className="panel">
-        <div className="panel-title">📒 호출 로그</div>
+        <div className="panel-head-row">
+          <div className="panel-title">📒 호출 로그</div>
+          <button className="btn-sm react-btn-auto" onClick={handleDeleteWorkerCallLogs} disabled={callLogs.length === 0} type="button">일괄삭제</button>
+        </div>
         <div className="report-list-wrap">
           {callLogs.length === 0 && <div className="table-empty">저장된 호출 로그가 없습니다.</div>}
           {callLogs.map((report) => (
@@ -36,7 +47,7 @@ export default function WorkerCallPage({
               <div className="report-header">
                 <div>
                   <div className="report-date">{new Date(report.created_at).toLocaleString('ko-KR')}</div>
-                  <div className="report-author">작성자: {report.author_name || '구이일'} · 작업자 호출</div>
+                  <div className="report-author">작성자: {report.author_name || '구이일'} · {getCallLogType(report.text_content)}</div>
                 </div>
                 <button className="report-delete-btn react-btn-auto" onClick={() => handleDeleteReport(report.id)} type="button" aria-label="삭제">
                   <svg viewBox="0 0 24 24">

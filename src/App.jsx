@@ -8,7 +8,7 @@ import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, W
 import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { ConfirmDialog, MyPageModal, SidebarNav, SiteTopbar } from './components/layout';
 import { AlertsPage, DailyWorkLogPage, DashboardPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkerCallPage, WorkersPage, ZonesPage } from './components/pages';
-import { createAlert, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchTodaySummary, fetchWeather, fetchWorkers, generateTodaySummary, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
+import { createAlert, createDeviceCommand, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchTodaySummary, fetchWeather, fetchWorkers, generateTodaySummary, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 const LARGE_TEXT_KEY = 'dashboard_large_text_enabled';
 
@@ -70,7 +70,10 @@ export default function App() {
 
   const visibleReports = reports.filter((report) => !isLegacyPlaceholder(report));
   const translationReports = visibleReports.filter((report) => report?.entry_type === 'translation');
-  const workerCallLogs = visibleReports.filter((report) => (report?.text_content || '').startsWith('[작업자 호출]'));
+  const workerCallLogs = visibleReports.filter((report) => {
+    const text = report?.text_content || '';
+    return text.startsWith('[작업자 호출]') || text.startsWith('[작업자 요청]');
+  });
   const activeWorkers = workers.filter((worker) => worker.status === 'work');
   const sidebarNavSections = useMemo(
     () => NAV_SECTIONS
@@ -568,18 +571,22 @@ export default function App() {
   async function handleCallWorker(workerLabel) {
     try {
       setCallingWorker(workerLabel);
-      await createReport(apiBase, {
-        text_content: '[작업자 호출] ' + workerLabel + ' 호출',
-        translated_text: '',
-        source_language: 'ko',
-        target_language: 'ko',
-        author_name: currentUser?.name || '구이일',
-        entry_type: 'manual',
-      });
+      const workerKey = workerLabel.includes('B') ? 'B' : 'A';
+      await Promise.all([
+        createDeviceCommand(apiBase, { device: 'uno-main', cmd: 'call_worker', worker: workerKey }),
+        createReport(apiBase, {
+          text_content: '[작업자 호출] ' + workerLabel + ' 호출',
+          translated_text: '',
+          source_language: 'ko',
+          target_language: 'ko',
+          author_name: currentUser?.name || '구이일',
+          entry_type: 'manual',
+        }),
+      ]);
       await loadReports();
-      setMessage(workerLabel + ' 호출 기록을 저장했습니다.');
+      setMessage(workerLabel + ' 호출 명령을 전송했습니다.');
     } catch (error) {
-      setMessage('작업자 호출 저장에 실패했습니다: ' + error.message);
+      setMessage('작업자 호출에 실패했습니다: ' + error.message);
     } finally {
       setCallingWorker('');
     }
@@ -602,6 +609,82 @@ export default function App() {
     });
   }
 
+  function handleDeleteTranslationReports() {
+    if (!translationReports.length) return;
+    openConfirmDialog({
+      title: '번역 로그를 모두 삭제할까요?',
+      description: '실시간 번역 페이지의 번역 로그가 모두 삭제됩니다.',
+      confirmLabel: '일괄삭제',
+      tone: 'danger',
+      onConfirm: async () => {
+        try {
+          await Promise.all(translationReports.map((report) => removeReport(apiBase, report.id)));
+          await loadReports();
+          setMessage('번역 로그를 모두 삭제했습니다.');
+        } catch (error) {
+          setMessage(`번역 로그 일괄삭제에 실패했습니다: ${error.message}`);
+        }
+      },
+    });
+  }
+
+  function handleDeleteWorkerCallLogs() {
+    if (!workerCallLogs.length) return;
+    openConfirmDialog({
+      title: '호출 로그를 모두 삭제할까요?',
+      description: '작업자 호출과 작업자 요청 로그가 모두 삭제됩니다.',
+      confirmLabel: '일괄삭제',
+      tone: 'danger',
+      onConfirm: async () => {
+        try {
+          await Promise.all(workerCallLogs.map((report) => removeReport(apiBase, report.id)));
+          await loadReports();
+          setMessage('호출 로그를 모두 삭제했습니다.');
+        } catch (error) {
+          setMessage(`호출 로그 일괄삭제에 실패했습니다: ${error.message}`);
+        }
+      },
+    });
+  }
+
+  function handleDeleteDailyReports() {
+    if (!visibleReports.length) return;
+    openConfirmDialog({
+      title: '소통 로그를 모두 삭제할까요?',
+      description: '작업일지의 번역, 수동 입력, 호출 기록이 모두 삭제됩니다.',
+      confirmLabel: '일괄삭제',
+      tone: 'danger',
+      onConfirm: async () => {
+        try {
+          await Promise.all(visibleReports.map((report) => removeReport(apiBase, report.id)));
+          await loadReports();
+          setTodaySummary(null);
+          setMessage('소통 로그를 모두 삭제했습니다.');
+        } catch (error) {
+          setMessage(`소통 로그 일괄삭제에 실패했습니다: ${error.message}`);
+        }
+      },
+    });
+  }
+
+  function handleResolveAllAlerts() {
+    if (!alerts.length) return;
+    openConfirmDialog({
+      title: '안전 알림을 모두 해결 처리할까요?',
+      description: '현재 미처리 안전 알림이 모두 해결 상태로 변경됩니다.',
+      confirmLabel: '전체 해결',
+      tone: 'danger',
+      onConfirm: async () => {
+        try {
+          await Promise.all(alerts.map((alert) => resolveAlert(apiBase, alert.id)));
+          await loadAlerts();
+          setMessage('안전 알림을 모두 해결 처리했습니다.');
+        } catch (error) {
+          setMessage(`안전 알림 전체 처리에 실패했습니다: ${error.message}`);
+        }
+      },
+    });
+  }
   async function handlePhotoUpload(event) {
     const files = Array.from(event.target.files || []);
     if (!files.length) return;
@@ -700,6 +783,7 @@ export default function App() {
         handleCreateAlert={handleCreateAlert}
         alerts={alerts}
         handleResolveAlert={handleResolveAlert}
+        handleResolveAllAlerts={handleResolveAllAlerts}
         zones={ZONES}
       />
     );
@@ -729,6 +813,7 @@ export default function App() {
         handlePressToTalkEnd={handlePressToTalkEnd}
         todayReports={translationReports}
         handleDeleteReport={handleDeleteReport}
+        handleDeleteTranslationReports={handleDeleteTranslationReports}
       />
     );
   }
@@ -740,6 +825,7 @@ export default function App() {
         callingWorker={callingWorker}
         handleCallWorker={handleCallWorker}
         handleDeleteReport={handleDeleteReport}
+        handleDeleteWorkerCallLogs={handleDeleteWorkerCallLogs}
       />
     );
   }
@@ -753,6 +839,7 @@ export default function App() {
         setManualLogText={setManualLogText}
         handleCreateManualLog={handleCreateManualLog}
         handleDeleteReport={handleDeleteReport}
+        handleDeleteDailyReports={handleDeleteDailyReports}
         savingManualLog={savingManualLog}
         handleGenerateSummary={handleGenerateSummary}
         generatingSummary={generatingSummary}
@@ -848,6 +935,13 @@ export default function App() {
     </>
   );
 }
+
+
+
+
+
+
+
 
 
 

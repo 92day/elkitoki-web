@@ -2081,3 +2081,17 @@ body[data-font-scale="large"] .mypage-dialog {
   background: var(--bg);
   color: var(--text);
 }
+
+.panel-head-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.section-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+

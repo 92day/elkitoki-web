@@ -7,6 +7,7 @@ export default function DailyWorkLogPage({
   setManualLogText,
   handleCreateManualLog,
   handleDeleteReport,
+  handleDeleteDailyReports,
   savingManualLog,
   handleGenerateSummary,
   generatingSummary,
@@ -56,7 +57,10 @@ export default function DailyWorkLogPage({
       </div>
 
       <div className="panel">
-        <div className="panel-title">🗒️ 소통 로그</div>
+        <div className="panel-head-row">
+          <div className="panel-title">🗒️ 소통 로그</div>
+          <button className="btn-sm react-btn-auto" onClick={handleDeleteDailyReports} disabled={todayReports.length === 0} type="button">일괄삭제</button>
+        </div>
         <div className="report-list-wrap">
           {todayReports.length === 0 && <div className="table-empty">오늘 저장된 소통 로그가 없습니다.</div>}
           {todayReports.map((report) => (

@@ -36,6 +36,7 @@ export const removeWorker = (apiBase, workerId) => apiRequest(apiBase, `/api/wor
 
 export const createAlert = (apiBase, payload) => apiRequest(apiBase, '/api/alerts/', { method: 'POST', body: payload });
 export const resolveAlert = (apiBase, alertId) => apiRequest(apiBase, `/api/alerts/${alertId}/resolve`, { method: 'PATCH' });
+export const createDeviceCommand = (apiBase, payload) => apiRequest(apiBase, '/api/device/commands', { method: 'POST', body: payload });
 
 export const translateText = (apiBase, payload) => apiRequest(apiBase, '/api/translate', { method: 'POST', body: payload });
 export const createReport = (apiBase, payload) => apiRequest(apiBase, '/api/reports/', { method: 'POST', body: payload });
@@ -53,4 +54,7 @@ export const removePhoto = (apiBase, photoId) => apiRequest(apiBase, `/api/photo
 export const loginUser = (apiBase, payload) => apiRequest(apiBase, '/api/auth/login', { method: 'POST', body: payload });
 export const fetchCurrentUser = (apiBase, token) => apiRequest(apiBase, '/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
 export const logoutUser = (apiBase, token) => apiRequest(apiBase, '/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
+
+
+
 

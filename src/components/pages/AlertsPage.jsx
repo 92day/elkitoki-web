@@ -6,15 +6,19 @@
   handleCreateAlert,
   alerts,
   handleResolveAlert,
+  handleResolveAllAlerts,
   zones,
 }) {
   return (
     <div className="page active">
       <div className="section-header">
         <div className="section-title">안전 알림</div>
-        <button className="btn-primary react-btn-auto" onClick={() => setShowAlertForm((prev) => !prev)} type="button">
-          + 수동 등록
-        </button>
+        <div className="section-header-actions">
+          <button className="btn-sm react-btn-auto" onClick={handleResolveAllAlerts} disabled={alerts.length === 0} type="button">일괄삭제</button>
+          <button className="btn-primary react-btn-auto" onClick={() => setShowAlertForm((prev) => !prev)} type="button">
+            + 수동 등록
+          </button>
+        </div>
       </div>
 
       {showAlertForm && (
