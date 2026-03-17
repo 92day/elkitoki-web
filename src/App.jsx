@@ -252,9 +252,20 @@ export default function App() {
   useEffect(() => {
     if (!currentUser) return;
     if (activePage === 'photos') {
-      loadPhotos().catch((error) => setMessage(`현장 사진을 불러오지 못했습니다: ${error.message}`));
+      loadPhotos().catch((error) => setMessage('현장 사진을 불러오지 못했습니다: ' + error.message));
     }
   }, [photoZone]);
+
+  useEffect(() => {
+    if (!currentUser) return undefined;
+    if (!['worker-call', 'daily-log'].includes(activePage)) return undefined;
+
+    const timerId = window.setInterval(() => {
+      loadReports().catch(() => {});
+    }, 2500);
+
+    return () => window.clearInterval(timerId);
+  }, [activePage, currentUser]);
 
   useEffect(() => {
     let cancelled = false;
@@ -572,7 +583,7 @@ export default function App() {
     try {
       setCallingWorker(workerLabel);
       const workerKey = workerLabel.includes('B') ? 'B' : 'A';
-      await Promise.all([
+      const [, createdReport] = await Promise.all([
         createDeviceCommand(apiBase, { device: 'uno-main', cmd: 'call_worker', worker: workerKey }),
         createReport(apiBase, {
           text_content: '[작업자 호출] ' + workerLabel + ' 호출',
@@ -583,7 +594,10 @@ export default function App() {
           entry_type: 'manual',
         }),
       ]);
-      await loadReports();
+      if (createdReport?.id) {
+        setReports((prev) => [createdReport, ...prev.filter((report) => report.id !== createdReport.id)]);
+      }
+      void loadReports().catch(() => {});
       setMessage(workerLabel + ' 호출 명령을 전송했습니다.');
     } catch (error) {
       setMessage('작업자 호출에 실패했습니다: ' + error.message);
@@ -935,6 +949,11 @@ export default function App() {
     </>
   );
 }
+
+
+
+
+
 
 
 
