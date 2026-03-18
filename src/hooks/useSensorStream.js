@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from 'react';
+﻿import { useEffect, useRef, useState } from 'react';
 
 const ZONE_SOUND_FIELDS = {
   1: 'soundA',
@@ -50,8 +50,13 @@ function buildZoneNoiseById(sensorState, now = new Date()) {
   return next;
 }
 
-export default function useSensorStream(wsBase, setSensors, setSensorLog) {
+export default function useSensorStream(wsBase, setSensors, setSensorLog, onSensorEvent) {
   const [wsConnected, setWsConnected] = useState(false);
+  const sensorEventRef = useRef(onSensorEvent);
+
+  useEffect(() => {
+    sensorEventRef.current = onSensorEvent;
+  }, [onSensorEvent]);
 
   useEffect(() => {
     let socket;
@@ -108,6 +113,10 @@ export default function useSensorStream(wsBase, setSensors, setSensorLog) {
               },
               ...prev,
             ].slice(0, 40));
+
+            if (typeof sensorEventRef.current === 'function') {
+              sensorEventRef.current(nextSensor);
+            }
           }
         } catch (error) {
           console.error(error);
@@ -129,4 +138,3 @@ export default function useSensorStream(wsBase, setSensors, setSensorLog) {
 
   return wsConnected;
 }
-

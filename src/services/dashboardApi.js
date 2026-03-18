@@ -31,6 +31,7 @@ export const generateTodaySummary = (apiBase) => apiRequest(apiBase, '/api/repor
 export const fetchDailyLogEntries = (apiBase) => apiRequest(apiBase, '/api/reports/daily-log/today');
 export const fetchDailyLogSummary = (apiBase) => apiRequest(apiBase, '/api/reports/daily-log/summary/today');
 export const generateDailyLogSummary = (apiBase) => apiRequest(apiBase, '/api/reports/daily-log/summary/today/generate', { method: 'POST' });
+export const clearTodayDailyLogs = (apiBase) => apiRequest(apiBase, '/api/reports/daily-log/today', { method: 'DELETE' });
 
 export const fetchPhotos = (apiBase, zoneId = '') => apiRequest(apiBase, `/api/photos/${zoneId ? `?zone_id=${zoneId}` : ''}`);
 
@@ -58,8 +59,3 @@ export const removePhoto = (apiBase, photoId) => apiRequest(apiBase, `/api/photo
 export const loginUser = (apiBase, payload) => apiRequest(apiBase, '/api/auth/login', { method: 'POST', body: payload });
 export const fetchCurrentUser = (apiBase, token) => apiRequest(apiBase, '/api/auth/me', { headers: { Authorization: `Bearer ${token}` } });
 export const logoutUser = (apiBase, token) => apiRequest(apiBase, '/api/auth/logout', { method: 'POST', headers: { Authorization: `Bearer ${token}` } });
-
-
-
-
-
