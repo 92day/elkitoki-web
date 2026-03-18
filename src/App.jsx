@@ -8,7 +8,7 @@ import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, W
 import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { ConfirmDialog, MyPageModal, SidebarNav, SiteTopbar } from './components/layout';
 import { AlertsPage, DailyWorkLogPage, DashboardPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkerCallPage, WorkersPage, ZonesPage } from './components/pages';
-import { createAlert, createDeviceCommand, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchTodaySummary, fetchWeather, fetchWorkers, generateTodaySummary, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
+import { createAlert, createDeviceCommand, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchDailyLogEntries, fetchDailyLogSummary, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchWeather, fetchWorkers, generateDailyLogSummary, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 const LARGE_TEXT_KEY = 'dashboard_large_text_enabled';
 
@@ -32,6 +32,7 @@ export default function App() {
   const [sensors, setSensors] = useState({ temperature: null, humidity: null, dust: null, gas: null, zoneNoiseById: {} });
   const [sensorLog, setSensorLog] = useState([]);
   const [reports, setReports] = useState([]);
+  const [dailyLogEntries, setDailyLogEntries] = useState([]);
   const [todaySummary, setTodaySummary] = useState(null);
   const [manualLogText, setManualLogText] = useState('');
   const [savingManualLog, setSavingManualLog] = useState(false);
@@ -203,7 +204,8 @@ export default function App() {
   async function loadAlerts() { const data = await fetchAlerts(apiBase); setAlerts(Array.isArray(data) ? data : []); }
   async function loadSensors() { const data = await fetchLatestSensors(apiBase); setSensors(data || { temperature: null, humidity: null, dust: null, gas: null, zoneNoiseById: {} }); }
   async function loadReports() { const data = await fetchTodayReports(apiBase); setReports(Array.isArray(data) ? data : []); }
-  async function loadTodaySummary() { const data = await fetchTodaySummary(apiBase); setTodaySummary(data || null); }
+  async function loadDailyLogEntriesData() { const data = await fetchDailyLogEntries(apiBase); setDailyLogEntries(Array.isArray(data) ? data : []); }
+  async function loadTodaySummary() { const data = await fetchDailyLogSummary(apiBase); setTodaySummary(data || null); }
   async function loadPhotos() {
     const data = await fetchPhotos(apiBase, photoZone);
     setPhotos(Array.isArray(data) ? data : []);
@@ -233,7 +235,7 @@ export default function App() {
           await loadReports();
           setMessage('작업자를 호출하고 호출 로그를 확인하세요.');
         }
-        if (activePage === 'daily-log') await Promise.all([loadReports(), loadTodaySummary()]);
+        if (activePage === 'daily-log') await Promise.all([loadDailyLogEntriesData(), loadTodaySummary()]);
         if (activePage === 'photos') await loadPhotos();
       } catch (error) {
         setMessage(`데이터를 불러오지 못했습니다: ${error.message}`);
@@ -282,7 +284,11 @@ export default function App() {
     if (!['worker-call', 'daily-log'].includes(activePage)) return undefined;
 
     const timerId = window.setInterval(() => {
-      loadReports().catch(() => {});
+      if (activePage === 'daily-log') {
+        loadDailyLogEntriesData().catch(() => {});
+      } else {
+        loadReports().catch(() => {});
+      }
     }, 800);
 
     return () => window.clearInterval(timerId);
@@ -565,7 +571,7 @@ export default function App() {
   async function handleGenerateSummary() {
     try {
       setGeneratingSummary(true);
-      const summary = await generateTodaySummary(apiBase);
+      const summary = await generateDailyLogSummary(apiBase);
       setTodaySummary(summary || null);
       setMessage('오늘의 요약을 생성했습니다.');
     } catch (error) {
@@ -591,7 +597,7 @@ export default function App() {
         entry_type: 'manual',
       });
       setManualLogText('');
-      await loadReports();
+      await Promise.all([loadReports(), loadDailyLogEntriesData()]);
       setMessage('수동 기록을 저장했습니다.');
     } catch (error) {
       setMessage(`수동 기록 저장에 실패했습니다: ${error.message}`);
@@ -635,7 +641,7 @@ export default function App() {
       onConfirm: async () => {
         try {
           await removeReport(apiBase, reportId);
-          await loadReports();
+          await Promise.all([loadReports(), loadDailyLogEntriesData()]);
           setMessage('기록을 삭제했습니다.');
         } catch (error) {
           setMessage(`기록 삭제에 실패했습니다: ${error.message}`);
@@ -683,16 +689,20 @@ export default function App() {
   }
 
   function handleDeleteDailyReports() {
-    if (!visibleReports.length) return;
+    const deletableDailyLogs = dailyLogEntries.filter((report) => report.deletable !== false && (report.mysql_report_id || report.id));
+    if (!deletableDailyLogs.length) {
+      setMessage('삭제할 작업일지 기록이 없습니다.');
+      return;
+    }
     openConfirmDialog({
       title: '소통 로그를 모두 삭제할까요?',
-      description: '작업일지의 번역, 수동 입력, 호출 기록이 모두 삭제됩니다.',
+      description: '작업일지의 번역, 수동 입력, 호출 기록이 모두 삭제됩니다. 안전 알림 이력은 유지됩니다.',
       confirmLabel: '일괄삭제',
       tone: 'danger',
       onConfirm: async () => {
         try {
-          await Promise.all(visibleReports.map((report) => removeReport(apiBase, report.id)));
-          await loadReports();
+          await Promise.all(deletableDailyLogs.map((report) => removeReport(apiBase, report.mysql_report_id || report.id)));
+          await Promise.all([loadReports(), loadDailyLogEntriesData()]);
           setTodaySummary(null);
           setMessage('소통 로그를 모두 삭제했습니다.');
         } catch (error) {
@@ -871,7 +881,7 @@ export default function App() {
     return (
       <DailyWorkLogPage
         todaySummary={todaySummary}
-        todayReports={visibleReports}
+        todayReports={dailyLogEntries}
         manualLogText={manualLogText}
         setManualLogText={setManualLogText}
         handleCreateManualLog={handleCreateManualLog}
@@ -972,6 +982,9 @@ export default function App() {
     </>
   );
 }
+
+
+
 
 
 

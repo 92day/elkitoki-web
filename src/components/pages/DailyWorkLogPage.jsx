@@ -18,6 +18,13 @@ export default function DailyWorkLogPage({
     ? new Date(todaySummary.updated_at).toLocaleString('ko-KR')
     : null;
 
+  function getEntryLabel(report) {
+    if (report?.log_type === 'worker_call') return '작업자 호출';
+    if (report?.log_type === 'alert') return '안전 알림';
+    if (report?.entry_type === 'translation') return '번역 기록';
+    return '수동 입력';
+  }
+
   return (
     <div className="page active">
       <div className="section-header">
@@ -68,17 +75,24 @@ export default function DailyWorkLogPage({
               <div className="report-header">
                 <div>
                   <div className="report-date">{new Date(report.created_at).toLocaleString('ko-KR')}</div>
-                  <div className="report-author">작성자: {report.author_name || '구이일'} · {report.entry_type === 'manual' ? '수동 입력' : '번역 기록'}</div>
+                  <div className="report-author">작성자: {report.author_name || '구이일'} · {getEntryLabel(report)}</div>
                 </div>
-                <button className="report-delete-btn react-btn-auto" onClick={() => handleDeleteReport(report.id)} type="button" aria-label="삭제">
-                  <svg viewBox="0 0 24 24">
-                    <path d="M3 6h18"></path>
-                    <path d="M8 6V4h8v2"></path>
-                    <path d="M19 6l-1 14H6L5 6"></path>
-                    <path d="M10 11v6"></path>
-                    <path d="M14 11v6"></path>
-                  </svg>
-                </button>
+                {report.deletable !== false && (
+                  <button
+                    className="report-delete-btn react-btn-auto"
+                    onClick={() => handleDeleteReport(report.mysql_report_id || report.id)}
+                    type="button"
+                    aria-label="삭제"
+                  >
+                    <svg viewBox="0 0 24 24">
+                      <path d="M3 6h18"></path>
+                      <path d="M8 6V4h8v2"></path>
+                      <path d="M19 6l-1 14H6L5 6"></path>
+                      <path d="M10 11v6"></path>
+                      <path d="M14 11v6"></path>
+                    </svg>
+                  </button>
+                )}
               </div>
               <div className="report-preview">{report.text_content}</div>
             </div>
