@@ -24,9 +24,9 @@ function formatPeakTime(dateValue) {
 
 function coerceNoiseScore(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) return null;
-  if (value <= 0) return 1;
-  if (value <= 100) return Math.max(1, Math.min(100, Math.round(value)));
-  const scaled = 1 + Math.pow(Math.min(value, 1023) / 1023, 0.58) * 99;
+  if (value <= 0) return 30;
+  if (value <= 100) return Math.max(30, Math.min(100, Math.round(value)));
+  const scaled = 30 + Math.pow(Math.min(value, 1023) / 1023, 0.65) * 70;
   return Math.round(scaled);
 }
 
