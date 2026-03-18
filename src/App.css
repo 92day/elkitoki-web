@@ -29,10 +29,12 @@ body[data-app-view="login"] #root {
 
 body[data-app-view="dashboard"] {
   padding: 12px;
+  overflow: hidden;
 }
 
 body[data-app-view="dashboard"] #root {
-  min-height: 100dvh;
+  height: calc(100dvh - 24px);
+  min-height: calc(100dvh - 24px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -40,9 +42,10 @@ body[data-app-view="dashboard"] #root {
 
 .ipad-shell {
   width: min(1440px, calc(100vw - 32px));
-  min-height: min(820px, calc(100dvh - 24px));
+  height: min(820px, calc(100dvh - 24px));
+  max-height: min(820px, calc(100dvh - 24px));
   display: grid;
-  grid-template-rows: auto 1fr;
+  grid-template-rows: auto minmax(0, 1fr);
   background: var(--surface);
   border-radius: 16px;
   border: 1px solid var(--border);
@@ -56,10 +59,20 @@ body[data-theme="light"] .ipad-shell {
 
 .main {
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 220px minmax(0, 1fr);
   min-height: 0;
   height: 100%;
   overflow: hidden;
+}
+
+.topbar {
+  flex-shrink: 0;
+}
+
+.sidebar {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .content {
@@ -422,7 +435,17 @@ body[data-theme="light"] .ipad-shell {
     grid-template-columns: 1fr;
   }
 
-  .content {
+  .topbar {
+  flex-shrink: 0;
+}
+
+.sidebar {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.content {
     padding: 14px;
   }
 
@@ -923,7 +946,17 @@ body[data-font-scale="large"] .nav-icon {
   font-size: 20px;
 }
 
-body[data-font-scale="large"] .content {
+body[data-font-scale="large"] .topbar {
+  flex-shrink: 0;
+}
+
+.sidebar {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.content {
   gap: 20px;
 }
 
@@ -1079,7 +1112,17 @@ body[data-font-scale="large"] .mypage-dialog {
     padding: 14px 16px;
   }
 
-  body[data-font-scale="large"] .content {
+  body[data-font-scale="large"] .topbar {
+  flex-shrink: 0;
+}
+
+.sidebar {
+  min-height: 0;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.content {
     gap: 16px;
   }
 
@@ -2094,4 +2137,5 @@ body[data-font-scale="large"] .mypage-dialog {
   align-items: center;
   gap: 8px;
 }
+
 
