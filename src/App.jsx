@@ -1,14 +1,15 @@
-﻿import { useEffect, useMemo, useState } from 'react';
+﻿import { useCallback, useEffect, useMemo, useState } from 'react';
 import useSpeechRecognition from './hooks/useSpeechRecognition';
 import useThemePreference from './hooks/useThemePreference';
 import useClockDisplay from './hooks/useClockDisplay';
 import useSensorStream from './hooks/useSensorStream';
+import useCommunicationActions from './hooks/useCommunicationActions';
 import './App.css';
 import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_ROLE_OPTIONS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
 import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { ConfirmDialog, MyPageModal, SidebarNav, SiteTopbar } from './components/layout';
 import { AlertsPage, DailyWorkLogPage, DashboardPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkerCallPage, WorkersPage, ZonesPage } from './components/pages';
-import { createAlert, createDeviceCommand, createReport, createWorker, fetchAlerts, fetchCurrentUser, fetchDailyLogEntries, fetchDailyLogSummary, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchWeather, fetchWorkers, generateDailyLogSummary, loginUser, logoutUser, removePhoto, removeReport, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
+import { createAlert, createWorker, fetchAlerts, fetchCurrentUser, fetchDailyLogEntries, fetchDailyLogSummary, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 const LARGE_TEXT_KEY = 'dashboard_large_text_enabled';
 
@@ -67,7 +68,29 @@ export default function App() {
   const sourceMeta = LANGUAGES.find((item) => item.code === sourceLanguage) || LANGUAGES[0];
   const targetMeta = LANGUAGES.find((item) => item.code === targetLanguage) || LANGUAGES[0];
   const speech = useSpeechRecognition(sourceMeta.speech);
-  const wsConnected = useSensorStream(wsBase, setSensors, setSensorLog);
+  const handleSensorStreamEvent = useCallback((nextSensor) => {
+    if (!nextSensor || nextSensor.kind !== 'event') return;
+
+    if (nextSensor.eventType === 'worker_call_button') {
+      if (activePage === 'worker-call') {
+        void loadReports().catch(() => {});
+      }
+      if (activePage === 'daily-log') {
+        void loadDailyLogEntriesData().catch(() => {});
+      }
+      return;
+    }
+
+    if (nextSensor.eventType === 'noise_abnormal' || nextSensor.eventType === 'fall_detected') {
+      if (activePage === 'dashboard' || activePage === 'alerts') {
+        void loadAlerts().catch(() => {});
+      }
+      if (activePage === 'daily-log') {
+        void Promise.all([loadAlerts(), loadDailyLogEntriesData()]).catch(() => {});
+      }
+    }
+  }, [activePage]);
+  const wsConnected = useSensorStream(wsBase, setSensors, setSensorLog, handleSensorStreamEvent);
 
   const visibleReports = reports.filter((report) => !isLegacyPlaceholder(report));
   const translationReports = visibleReports.filter((report) => report?.entry_type === 'translation');
@@ -214,6 +237,40 @@ export default function App() {
 
   async function loadDashboard() { await Promise.all([loadWeather(), loadWorkers(), loadAlerts(), loadSensors()]); }
 
+  const {
+    refreshReportViews,
+    handleSaveWalkie,
+    handleGenerateSummary,
+    handleCreateManualLog,
+    handleDeleteDailyReports,
+    handleCallWorker,
+    handleDeleteReport,
+    handleDeleteTranslationReports,
+    handleDeleteWorkerCallLogs,
+  } = useCommunicationActions({
+    apiBase,
+    currentUserName: currentUser?.name,
+    sourceText,
+    translatedText,
+    sourceLanguage,
+    targetLanguage,
+    manualLogText,
+    dailyLogEntries,
+    translationReports,
+    workerCallLogs,
+    loadReports,
+    loadDailyLogEntriesData,
+    openConfirmDialog,
+    setMessage,
+    setSavingReport,
+    setGeneratingSummary,
+    setSavingManualLog,
+    setCallingWorker,
+    setReports,
+    setDailyLogEntries,
+    setManualLogText,
+    setTodaySummary,
+  });
   useEffect(() => {
     if (!currentUser) return;
 
@@ -281,15 +338,11 @@ export default function App() {
   }, [activePage, currentUser]);
   useEffect(() => {
     if (!currentUser) return undefined;
-    if (!['worker-call', 'daily-log'].includes(activePage)) return undefined;
+    if (activePage !== 'daily-log') return undefined;
 
     const timerId = window.setInterval(() => {
-      if (activePage === 'daily-log') {
-        loadDailyLogEntriesData().catch(() => {});
-      } else {
-        loadReports().catch(() => {});
-      }
-    }, 800);
+      loadDailyLogEntriesData().catch(() => {});
+    }, 1500);
 
     return () => window.clearInterval(timerId);
   }, [activePage, currentUser]);
@@ -451,7 +504,7 @@ export default function App() {
       });
       setNewAlert({ level: 'high', source: '', message: '', zone_id: '' });
       setShowAlertForm(false);
-      await loadAlerts();
+      await Promise.all([loadAlerts(), refreshReportViews()]);
       setMessage('안전 알림을 등록했습니다.');
     } catch (error) {
       setMessage(`안전 알림 등록에 실패했습니다: ${error.message}`);
@@ -541,175 +594,6 @@ export default function App() {
     setTranslatedText('');
     setRecordSeconds(0);
     setMessage('실시간 번역 입력을 초기화했습니다.');
-  }
-
-  async function handleSaveWalkie() {
-    const text = sourceText.trim();
-    if (!text) {
-      setMessage('저장할 원문이 없습니다.');
-      return;
-    }
-    try {
-      setSavingReport(true);
-      await createReport(apiBase, {
-        text_content: text,
-        translated_text: translatedText.trim(),
-        source_language: sourceLanguage,
-        target_language: targetLanguage,
-        author_name: currentUser?.name || '구이일',
-        entry_type: 'translation',
-      });
-      await loadReports();
-      setMessage('번역 기록을 저장했습니다.');
-    } catch (error) {
-      setMessage(`번역 기록 저장에 실패했습니다: ${error.message}`);
-    } finally {
-      setSavingReport(false);
-    }
-  }
-
-  async function handleGenerateSummary() {
-    try {
-      setGeneratingSummary(true);
-      const summary = await generateDailyLogSummary(apiBase);
-      setTodaySummary(summary || null);
-      setMessage('오늘의 요약을 생성했습니다.');
-    } catch (error) {
-      setMessage(`오늘의 요약 생성에 실패했습니다: ${error.message}`);
-    } finally {
-      setGeneratingSummary(false);
-    }
-  }
-  async function handleCreateManualLog() {
-    const text = manualLogText.trim();
-    if (!text) {
-      setMessage('수동 기록 내용을 입력해 주세요.');
-      return;
-    }
-    try {
-      setSavingManualLog(true);
-      await createReport(apiBase, {
-        text_content: text,
-        translated_text: '',
-        source_language: 'ko',
-        target_language: 'ko',
-        author_name: currentUser?.name || '구이일',
-        entry_type: 'manual',
-      });
-      setManualLogText('');
-      await Promise.all([loadReports(), loadDailyLogEntriesData()]);
-      setMessage('수동 기록을 저장했습니다.');
-    } catch (error) {
-      setMessage(`수동 기록 저장에 실패했습니다: ${error.message}`);
-    } finally {
-      setSavingManualLog(false);
-    }
-  }
-
-  async function handleCallWorker(workerLabel) {
-    try {
-      setCallingWorker(workerLabel);
-      const workerKey = workerLabel.includes('B') ? 'B' : 'A';
-      const [, createdReport] = await Promise.all([
-        createDeviceCommand(apiBase, { device: 'uno-main', cmd: 'call_worker', worker: workerKey }),
-        createReport(apiBase, {
-          text_content: '[작업자 호출] ' + workerLabel + ' 호출',
-          translated_text: '',
-          source_language: 'ko',
-          target_language: 'ko',
-          author_name: currentUser?.name || '구이일',
-          entry_type: 'manual',
-        }),
-      ]);
-      if (createdReport?.id) {
-        setReports((prev) => [createdReport, ...prev.filter((report) => report.id !== createdReport.id)]);
-      }
-      void loadReports().catch(() => {});
-      setMessage(workerLabel + ' 호출 명령을 전송했습니다.');
-    } catch (error) {
-      setMessage('작업자 호출에 실패했습니다: ' + error.message);
-    } finally {
-      setCallingWorker('');
-    }
-  }
-  async function handleDeleteReport(reportId) {
-    openConfirmDialog({
-      title: '이 기록을 삭제할까요?',
-      description: '삭제하면 오늘의 로그 목록에서 즉시 사라집니다.',
-      confirmLabel: '삭제',
-      tone: 'danger',
-      onConfirm: async () => {
-        try {
-          await removeReport(apiBase, reportId);
-          await Promise.all([loadReports(), loadDailyLogEntriesData()]);
-          setMessage('기록을 삭제했습니다.');
-        } catch (error) {
-          setMessage(`기록 삭제에 실패했습니다: ${error.message}`);
-        }
-      },
-    });
-  }
-
-  function handleDeleteTranslationReports() {
-    if (!translationReports.length) return;
-    openConfirmDialog({
-      title: '번역 로그를 모두 삭제할까요?',
-      description: '실시간 번역 페이지의 번역 로그가 모두 삭제됩니다.',
-      confirmLabel: '일괄삭제',
-      tone: 'danger',
-      onConfirm: async () => {
-        try {
-          await Promise.all(translationReports.map((report) => removeReport(apiBase, report.id)));
-          await loadReports();
-          setMessage('번역 로그를 모두 삭제했습니다.');
-        } catch (error) {
-          setMessage(`번역 로그 일괄삭제에 실패했습니다: ${error.message}`);
-        }
-      },
-    });
-  }
-
-  function handleDeleteWorkerCallLogs() {
-    if (!workerCallLogs.length) return;
-    openConfirmDialog({
-      title: '호출 로그를 모두 삭제할까요?',
-      description: '작업자 호출과 작업자 요청 로그가 모두 삭제됩니다.',
-      confirmLabel: '일괄삭제',
-      tone: 'danger',
-      onConfirm: async () => {
-        try {
-          await Promise.all(workerCallLogs.map((report) => removeReport(apiBase, report.id)));
-          await loadReports();
-          setMessage('호출 로그를 모두 삭제했습니다.');
-        } catch (error) {
-          setMessage(`호출 로그 일괄삭제에 실패했습니다: ${error.message}`);
-        }
-      },
-    });
-  }
-
-  function handleDeleteDailyReports() {
-    const deletableDailyLogs = dailyLogEntries.filter((report) => report.deletable !== false && (report.mysql_report_id || report.id));
-    if (!deletableDailyLogs.length) {
-      setMessage('삭제할 작업일지 기록이 없습니다.');
-      return;
-    }
-    openConfirmDialog({
-      title: '소통 로그를 모두 삭제할까요?',
-      description: '작업일지의 번역, 수동 입력, 호출 기록이 모두 삭제됩니다. 안전 알림 이력은 유지됩니다.',
-      confirmLabel: '일괄삭제',
-      tone: 'danger',
-      onConfirm: async () => {
-        try {
-          await Promise.all(deletableDailyLogs.map((report) => removeReport(apiBase, report.mysql_report_id || report.id)));
-          await Promise.all([loadReports(), loadDailyLogEntriesData()]);
-          setTodaySummary(null);
-          setMessage('소통 로그를 모두 삭제했습니다.');
-        } catch (error) {
-          setMessage(`소통 로그 일괄삭제에 실패했습니다: ${error.message}`);
-        }
-      },
-    });
   }
 
   function handleResolveAllAlerts() {
@@ -982,6 +866,9 @@ export default function App() {
     </>
   );
 }
+
+
+
 
 
 
