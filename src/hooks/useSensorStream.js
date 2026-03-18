@@ -26,7 +26,8 @@ function coerceNoiseScore(value) {
   if (typeof value !== 'number' || Number.isNaN(value)) return null;
   if (value <= 0) return 30;
   if (value <= 100) return Math.max(30, Math.min(100, Math.round(value)));
-  const scaled = 30 + Math.pow(Math.min(value, 1023) / 1023, 0.65) * 70;
+  const rawScore = 1 + Math.pow(Math.min(value, 1023) / 1023, 0.58) * 69;
+  const scaled = 30 + rawScore;
   return Math.round(scaled);
 }
 
@@ -138,3 +139,4 @@ export default function useSensorStream(wsBase, setSensors, setSensorLog, onSens
 
   return wsConnected;
 }
+
