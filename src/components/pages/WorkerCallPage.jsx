@@ -1,8 +1,17 @@
-﻿function formatCallLogText(text) {
+﻿const WORKER_NAME_BY_KEY = {
+  A: '이레드',
+  B: '김그린',
+};
+
+function formatCallLogText(text) {
   if (!text) return '';
   return text
     .replace(/^\[작업자 호출\]\s*/, '')
-    .replace(/^\[작업자 요청\]\s*/, '');
+    .replace(/^\[작업자 요청\]\s*/, '')
+    .replace(/작업자\s*A/g, WORKER_NAME_BY_KEY.A)
+    .replace(/작업자\s*B/g, WORKER_NAME_BY_KEY.B)
+    .replace(/\bA(?=\s*(호출|요청))/g, WORKER_NAME_BY_KEY.A)
+    .replace(/\bB(?=\s*(호출|요청))/g, WORKER_NAME_BY_KEY.B);
 }
 
 function getCallLogType(text) {
@@ -26,11 +35,11 @@ export default function WorkerCallPage({
       <div className="panel">
         <div className="panel-title">📟 작업자 호출</div>
         <div className="worker-call-grid">
-          <button className="btn-primary worker-call-btn react-btn-auto" type="button" onClick={() => handleCallWorker('작업자 A')} disabled={callingWorker === '작업자 A'}>
-            {callingWorker === '작업자 A' ? '호출 중...' : '작업자 A 호출'}
+          <button className="btn-primary worker-call-btn react-btn-auto" type="button" onClick={() => handleCallWorker('A')} disabled={callingWorker === 'A'}>
+            {callingWorker === 'A' ? '호출 중...' : WORKER_NAME_BY_KEY.A + ' 호출'}
           </button>
-          <button className="btn-primary worker-call-btn react-btn-auto" type="button" onClick={() => handleCallWorker('작업자 B')} disabled={callingWorker === '작업자 B'}>
-            {callingWorker === '작업자 B' ? '호출 중...' : '작업자 B 호출'}
+          <button className="btn-primary worker-call-btn react-btn-auto" type="button" onClick={() => handleCallWorker('B')} disabled={callingWorker === 'B'}>
+            {callingWorker === 'B' ? '호출 중...' : WORKER_NAME_BY_KEY.B + ' 호출'}
           </button>
         </div>
       </div>
@@ -67,3 +76,4 @@ export default function WorkerCallPage({
     </div>
   );
 }
+
