@@ -40,6 +40,45 @@ body[data-app-view="dashboard"] #root {
   align-items: center;
 }
 
+
+.worker-request-toast-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+  pointer-events: none;
+}
+
+.worker-request-toast {
+  min-width: min(560px, calc(100vw - 48px));
+  max-width: min(760px, calc(100vw - 48px));
+  padding: 22px 30px;
+  border-radius: 22px;
+  border: 1px solid rgba(245, 166, 35, 0.42);
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.97) 0%, rgba(232, 69, 69, 0.97) 100%);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+  text-align: center;
+  box-shadow: 0 28px 64px rgba(232, 69, 69, 0.4);
+  animation: workerRequestToastPop 0.2s ease-out;
+}
+
+@keyframes workerRequestToastPop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
 .ipad-shell {
   width: min(1440px, calc(100vw - 32px));
   height: min(820px, calc(100dvh - 24px));
@@ -53,7 +92,46 @@ body[data-app-view="dashboard"] #root {
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.24);
 }
 
-body[data-theme="light"] .ipad-shell {
+body[data-theme="light"] 
+.worker-request-toast-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+  pointer-events: none;
+}
+
+.worker-request-toast {
+  min-width: min(560px, calc(100vw - 48px));
+  max-width: min(760px, calc(100vw - 48px));
+  padding: 22px 30px;
+  border-radius: 22px;
+  border: 1px solid rgba(245, 166, 35, 0.42);
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.97) 0%, rgba(232, 69, 69, 0.97) 100%);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+  text-align: center;
+  box-shadow: 0 28px 64px rgba(232, 69, 69, 0.4);
+  animation: workerRequestToastPop 0.2s ease-out;
+}
+
+@keyframes workerRequestToastPop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.ipad-shell {
   box-shadow: 0 24px 64px rgba(15, 23, 42, 0.2);
 }
 
@@ -1180,7 +1258,46 @@ body[data-font-scale="large"] .mypage-dialog {
 }
 
 @media (max-width: 1080px) {
-  .ipad-shell {
+  
+.worker-request-toast-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+  pointer-events: none;
+}
+
+.worker-request-toast {
+  min-width: min(560px, calc(100vw - 48px));
+  max-width: min(760px, calc(100vw - 48px));
+  padding: 22px 30px;
+  border-radius: 22px;
+  border: 1px solid rgba(245, 166, 35, 0.42);
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.97) 0%, rgba(232, 69, 69, 0.97) 100%);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+  text-align: center;
+  box-shadow: 0 28px 64px rgba(232, 69, 69, 0.4);
+  animation: workerRequestToastPop 0.2s ease-out;
+}
+
+@keyframes workerRequestToastPop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.ipad-shell {
     width: min(100%, calc(100vw - 32px));
     min-height: calc(100dvh - 24px);
   }
@@ -1225,7 +1342,46 @@ body[data-font-scale="large"] .mypage-dialog {
     padding: 0;
   }
 
-  .ipad-shell {
+  
+.worker-request-toast-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 120px;
+  pointer-events: none;
+}
+
+.worker-request-toast {
+  min-width: min(560px, calc(100vw - 48px));
+  max-width: min(760px, calc(100vw - 48px));
+  padding: 22px 30px;
+  border-radius: 22px;
+  border: 1px solid rgba(245, 166, 35, 0.42);
+  background: linear-gradient(135deg, rgba(245, 166, 35, 0.97) 0%, rgba(232, 69, 69, 0.97) 100%);
+  color: #fff;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.03em;
+  text-align: center;
+  box-shadow: 0 28px 64px rgba(232, 69, 69, 0.4);
+  animation: workerRequestToastPop 0.2s ease-out;
+}
+
+@keyframes workerRequestToastPop {
+  from {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+.ipad-shell {
     width: 100vw;
     min-height: 100dvh;
     border-radius: 0;
@@ -2157,6 +2313,8 @@ body[data-font-scale="large"] .mypage-dialog {
   align-items: center;
   gap: 8px;
 }
+
+
 
 
 

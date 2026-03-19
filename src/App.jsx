@@ -12,6 +12,10 @@ import { AlertsPage, DailyWorkLogPage, DashboardPage, LoginPage, PhotosPage, Pro
 import { createAlert, createWorker, fetchAlerts, fetchCurrentUser, fetchDailyLogEntries, fetchDailyLogSummary, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 const LARGE_TEXT_KEY = 'dashboard_large_text_enabled';
+const WORKER_NAME_LABELS = {
+  A: '이레드',
+  B: '김그린',
+};
 
 export default function App() {
   const apiBase = useMemo(() => getApiBase(), []);
@@ -61,6 +65,7 @@ export default function App() {
   const [translating, setTranslating] = useState(false);
   const [savingReport, setSavingReport] = useState(false);
   const [autoTranslateAfterSpeech, setAutoTranslateAfterSpeech] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
 
   const [photoZone, setPhotoZone] = useState('');
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
@@ -72,6 +77,12 @@ export default function App() {
     if (!nextSensor || nextSensor.kind !== 'event') return;
 
     if (nextSensor.eventType === 'worker_call_button') {
+      const workerName = WORKER_NAME_LABELS[nextSensor.worker] || '작업자';
+      const source = String(nextSensor.source || '');
+      if (source.startsWith('manual_button')) {
+        setMessage(`${workerName}님이 호출했습니다.`);
+        setToastMessage(`${workerName}님이 호출했습니다.`);
+      }
       if (activePage === 'worker-call') {
         void loadReports().catch(() => {});
       }
@@ -150,6 +161,13 @@ export default function App() {
   useEffect(() => {
     if (speech.transcript) setSourceText(speech.transcript);
   }, [speech.transcript]);
+
+  useEffect(() => {
+    if (!toastMessage) return undefined;
+
+    const timerId = window.setTimeout(() => setToastMessage(''), 2800);
+    return () => window.clearTimeout(timerId);
+  }, [toastMessage]);
 
   useEffect(() => {
     document.body.dataset.appView = currentUser ? 'dashboard' : 'login';
@@ -824,6 +842,11 @@ export default function App() {
 
   return (
     <>
+      {toastMessage ? (
+        <div className="worker-request-toast-overlay">
+          <div className="worker-request-toast">{toastMessage}</div>
+        </div>
+      ) : null}
       <div className="ipad-shell">
         <SiteTopbar wsConnected={wsConnected} clock={clock} dateText={dateText} />
         <div className="main">
@@ -866,6 +889,8 @@ export default function App() {
     </>
   );
 }
+
+
 
 
 
