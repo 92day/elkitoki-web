@@ -1,5 +1,10 @@
 ﻿import { clearTodayDailyLogs, createDeviceCommand, createReport, generateDailyLogSummary, removeReport } from '../services/dashboardApi';
 
+const WORKER_NAME_BY_KEY = {
+  A: '이레드',
+  B: '김그린',
+};
+
 export default function useCommunicationActions({
   apiBase,
   currentUserName,
@@ -127,14 +132,14 @@ export default function useCommunicationActions({
     });
   }
 
-  async function handleCallWorker(workerLabel) {
+  async function handleCallWorker(workerKey) {
+    const workerName = WORKER_NAME_BY_KEY[workerKey] || workerKey;
     try {
-      setCallingWorker(workerLabel);
-      const workerKey = workerLabel.includes('B') ? 'B' : 'A';
+      setCallingWorker(workerKey);
       const [, createdReport] = await Promise.all([
         createDeviceCommand(apiBase, { device: 'uno-main', cmd: 'call_worker', worker: workerKey }),
         createReport(apiBase, {
-          text_content: '[작업자 호출] ' + workerLabel + ' 호출',
+          text_content: '[작업자 호출] ' + workerName + ' 호출',
           translated_text: '',
           source_language: 'ko',
           target_language: 'ko',
@@ -146,7 +151,7 @@ export default function useCommunicationActions({
         setReports((prev) => [createdReport, ...prev.filter((report) => report.id !== createdReport.id)]);
       }
       await refreshReportViews();
-      setMessage(workerLabel + ' 호출 명령을 전송했습니다.');
+      setMessage(workerName + ' 호출 명령을 전송했습니다.');
     } catch (error) {
       setMessage('작업자 호출에 실패했습니다: ' + error.message);
     } finally {
@@ -222,5 +227,7 @@ export default function useCommunicationActions({
     handleDeleteWorkerCallLogs,
   };
 }
+
+
 
 

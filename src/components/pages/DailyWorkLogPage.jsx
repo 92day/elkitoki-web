@@ -1,4 +1,9 @@
-﻿import { useState } from 'react';
+﻿const WORKER_NAME_BY_KEY = {
+  A: '이레드',
+  B: '김그린',
+};
+
+import { useState } from 'react';
 
 export default function DailyWorkLogPage({
   todaySummary,
@@ -23,6 +28,16 @@ export default function DailyWorkLogPage({
     if (report?.log_type === 'alert') return '안전 알림';
     if (report?.entry_type === 'translation') return '번역 기록';
     return '수동 입력';
+  }
+
+  function formatEntryText(report) {
+    const text = report?.text_content || '';
+    if (report?.log_type !== 'worker_call') return text;
+    return text
+      .replace(/작업자\s*A/g, WORKER_NAME_BY_KEY.A)
+      .replace(/작업자\s*B/g, WORKER_NAME_BY_KEY.B)
+      .replace(/\bA(?=\s*(호출|요청))/g, WORKER_NAME_BY_KEY.A)
+      .replace(/\bB(?=\s*(호출|요청))/g, WORKER_NAME_BY_KEY.B);
   }
 
   return (
@@ -94,7 +109,7 @@ export default function DailyWorkLogPage({
                   </button>
                 )}
               </div>
-              <div className="report-preview">{report.text_content}</div>
+              <div className="report-preview">{formatEntryText(report)}</div>
             </div>
           ))}
         </div>
@@ -119,3 +134,4 @@ export default function DailyWorkLogPage({
     </div>
   );
 }
+
