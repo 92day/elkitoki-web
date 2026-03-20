@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+﻿import { useEffect } from 'react';
 import { AlertSettingsPage, EnvironmentSettingsPage } from '../pages';
 
 function getDisplayRole(role) {
@@ -14,6 +14,8 @@ export default function MyPageModal({
   largeTextEnabled,
   setLargeTextEnabled,
   languages,
+  environmentSettings,
+  onSaveEnvironmentSettings,
   onClose,
   onLogout,
   onSaveMessage,
@@ -90,10 +92,10 @@ export default function MyPageModal({
 
               <div className="mypage-theme-card mypage-accessibility-card">
                 <div>
-                  <div className="theme-card-label">큰글씨 설정</div>
-                  <div className="theme-card-mode">글씨가 큰 고가독성 화면</div>
+                  <div className="theme-card-label">접근성 설정</div>
+                  <div className="theme-card-mode">글자와 버튼이 조금 더 크게 보이는 화면</div>
                   <div className="mypage-setting-help">
-                    메뉴, 버튼, 표, 카드 글자가 전반적으로 커지고 간격도 넓어져 더 직관적으로 보입니다.
+                    메뉴, 버튼, 카드 글자 크기와 간격을 넓혀 보다 직관적으로 보이게 합니다.
                   </div>
                 </div>
                 <label className="theme-switch">
@@ -103,11 +105,11 @@ export default function MyPageModal({
                     onChange={() => {
                       setLargeTextEnabled((prev) => {
                         const next = !prev;
-                        onSaveMessage?.(next ? '큰글씨 모드를 켰습니다.' : '큰글씨 모드를 껐습니다.');
+                        onSaveMessage?.(next ? '큰 글씨 모드를 켰습니다.' : '큰 글씨 모드를 껐습니다.');
                         return next;
                       });
                     }}
-                    aria-label="큰글씨 모드 전환"
+                    aria-label="큰 글씨 모드 전환"
                   />
                   <span className="theme-slider"></span>
                 </label>
@@ -122,7 +124,12 @@ export default function MyPageModal({
 
           <div className="mypage-settings-section">
             <div className="mypage-section-title">환경 설정</div>
-            <EnvironmentSettingsPage embedded languages={languages} onSave={onSaveMessage} />
+            <EnvironmentSettingsPage
+              embedded
+              languages={languages}
+              value={environmentSettings}
+              onSave={onSaveEnvironmentSettings}
+            />
           </div>
         </div>
 

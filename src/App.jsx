@@ -9,6 +9,7 @@ import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, W
 import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { ConfirmDialog, MyPageModal, SidebarNav, SiteTopbar } from './components/layout';
 import { AlertsPage, DailyWorkLogPage, DashboardPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkerCallPage, WorkersPage, ZonesPage } from './components/pages';
+import { readEnvironmentSettings } from './components/pages/EnvironmentSettingsPage';
 import { createAlert, createWorker, fetchAlerts, fetchCurrentUser, fetchDailyLogEntries, fetchDailyLogSummary, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 const LARGE_TEXT_KEY = 'dashboard_large_text_enabled';
@@ -56,9 +57,10 @@ export default function App() {
   const [newWorker, setNewWorker] = useState({ name: '', role: '', phone: '', zone_id: '' });
   const [showAlertForm, setShowAlertForm] = useState(false);
   const [newAlert, setNewAlert] = useState({ level: 'high', source: '', message: '', zone_id: '' });
+  const [environmentSettings, setEnvironmentSettings] = useState(() => readEnvironmentSettings());
 
-  const [sourceLanguage, setSourceLanguage] = useState('ko');
-  const [targetLanguage, setTargetLanguage] = useState('vi');
+  const [sourceLanguage, setSourceLanguage] = useState(() => readEnvironmentSettings().primaryLanguage || 'ko');
+  const [targetLanguage, setTargetLanguage] = useState(() => readEnvironmentSettings().secondaryLanguage || 'vi');
   const [sourceText, setSourceText] = useState('');
   const [translatedText, setTranslatedText] = useState('');
   const [recordSeconds, setRecordSeconds] = useState(0);
@@ -157,6 +159,17 @@ export default function App() {
       cancelled = true;
     };
   }, [apiBase, authToken]);
+
+  useEffect(() => {
+    setSourceLanguage(environmentSettings?.primaryLanguage || 'ko');
+    setTargetLanguage(environmentSettings?.secondaryLanguage || 'vi');
+  }, [environmentSettings]);
+
+  useEffect(() => {
+    if (sourceLanguage === targetLanguage) {
+      setTargetLanguage(sourceLanguage === 'ko' ? 'vi' : 'ko');
+    }
+  }, []);
 
   useEffect(() => {
     if (speech.transcript) setSourceText(speech.transcript);
@@ -557,7 +570,7 @@ export default function App() {
 
   async function handleTranslateWalkie(inputText = sourceText, options = {}) {
     const text = (inputText || '').trim();
-    const autoSpeak = options.autoSpeak === true;
+    const autoSpeak = options.autoSpeak === true || environmentSettings.autoPlayTranslatedVoice === true;
     if (!text) {
       setMessage('먼저 말하거나 텍스트를 입력해 주세요.');
       return;
@@ -666,6 +679,20 @@ export default function App() {
         }
       },
     });
+  }
+
+  function handleSaveEnvironmentSettings(nextSettings) {
+    const normalizedSettings = {
+      ...readEnvironmentSettings(),
+      ...nextSettings,
+    };
+    if (normalizedSettings.primaryLanguage === normalizedSettings.secondaryLanguage) {
+      normalizedSettings.secondaryLanguage = normalizedSettings.primaryLanguage === 'ko' ? 'vi' : 'ko';
+    }
+    setEnvironmentSettings(normalizedSettings);
+    setSourceLanguage(normalizedSettings.primaryLanguage);
+    setTargetLanguage(normalizedSettings.secondaryLanguage);
+    setMessage('환경 설정을 저장했습니다. 번역 기본 언어에 바로 반영됩니다.');
   }
 
   const weatherVisual = getWeatherVisual(weather?.weather_code, weather?.is_day);
@@ -882,6 +909,8 @@ export default function App() {
         largeTextEnabled={largeTextEnabled}
         setLargeTextEnabled={setLargeTextEnabled}
         languages={LANGUAGES}
+        environmentSettings={environmentSettings}
+        onSaveEnvironmentSettings={handleSaveEnvironmentSettings}
         onClose={() => setShowMyPage(false)}
         onLogout={handleLogout}
         onSaveMessage={setMessage}
@@ -889,60 +918,3 @@ export default function App() {
     </>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
