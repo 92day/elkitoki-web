@@ -1,42 +1,52 @@
-﻿import { useState } from 'react';
+﻿import { useEffect, useState } from 'react';
 
-const STORAGE_KEY = 'dashboard_environment_settings';
-const DEFAULTS = {
+export const ENVIRONMENT_SETTINGS_STORAGE_KEY = 'dashboard_environment_settings';
+export const ENVIRONMENT_SETTINGS_DEFAULTS = {
   primaryLanguage: 'ko',
   secondaryLanguage: 'vi',
-  autoPlayTranslatedVoice: false,
+  autoPlayTranslatedVoice: true,
   highContrastMode: false,
   compactCards: false,
 };
 
-function readInitialState() {
+export function readEnvironmentSettings() {
   try {
-    const saved = window.localStorage.getItem(STORAGE_KEY);
-    return saved ? { ...DEFAULTS, ...JSON.parse(saved) } : DEFAULTS;
+    const saved = window.localStorage.getItem(ENVIRONMENT_SETTINGS_STORAGE_KEY);
+    return saved ? { ...ENVIRONMENT_SETTINGS_DEFAULTS, ...JSON.parse(saved) } : { ...ENVIRONMENT_SETTINGS_DEFAULTS };
   } catch {
-    return DEFAULTS;
+    return { ...ENVIRONMENT_SETTINGS_DEFAULTS };
   }
 }
 
-export default function EnvironmentSettingsPage({ languages, onSave, embedded = false }) {
-  const [settings, setSettings] = useState(readInitialState);
+export default function EnvironmentSettingsPage({
+  languages,
+  onSave,
+  value,
+  embedded = false,
+}) {
+  const [settings, setSettings] = useState(() => value || readEnvironmentSettings());
 
-  function updateField(key, value) {
-    setSettings((prev) => ({ ...prev, [key]: value }));
+  useEffect(() => {
+    if (!value) return;
+    setSettings({ ...ENVIRONMENT_SETTINGS_DEFAULTS, ...value });
+  }, [value]);
+
+  function updateField(key, fieldValue) {
+    setSettings((prev) => ({ ...prev, [key]: fieldValue }));
   }
 
   function handleSave() {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
-    onSave?.('\ud658\uacbd \uc124\uc815\uc744 \uc800\uc7a5\ud588\uc2b5\ub2c8\ub2e4.');
+    window.localStorage.setItem(ENVIRONMENT_SETTINGS_STORAGE_KEY, JSON.stringify(settings));
+    onSave?.(settings);
   }
 
   const content = (
     <>
       <div className="panel">
-        <div className="panel-title">{'\uae30\ubcf8 \uc791\uc5c5 \ud658\uacbd'}</div>
+        <div className="panel-title">기본 작업 환경</div>
         <div className="form-grid">
           <div className="form-group compact-field">
-            <label className="form-label">{'\uae30\ubcf8 \ub9d0\ud560 \uc5b8\uc5b4'}</label>
+            <label className="form-label">기본 말할 언어</label>
             <select className="form-select" value={settings.primaryLanguage} onChange={(event) => updateField('primaryLanguage', event.target.value)}>
               {languages.map((language) => (
                 <option key={language.code} value={language.code}>{language.label}</option>
@@ -44,7 +54,7 @@ export default function EnvironmentSettingsPage({ languages, onSave, embedded = 
             </select>
           </div>
           <div className="form-group compact-field">
-            <label className="form-label">{'\uae30\ubcf8 \ubc88\uc5ed \uc5b8\uc5b4'}</label>
+            <label className="form-label">기본 번역 언어</label>
             <select className="form-select" value={settings.secondaryLanguage} onChange={(event) => updateField('secondaryLanguage', event.target.value)}>
               {languages.map((language) => (
                 <option key={language.code} value={language.code}>{language.label}</option>
@@ -56,32 +66,32 @@ export default function EnvironmentSettingsPage({ languages, onSave, embedded = 
 
       <div className="split-grid settings-grid">
         <div className="panel">
-          <div className="panel-title">{'\uc0ac\uc6a9\uc131'}</div>
+          <div className="panel-title">사용성</div>
           <div className="settings-stack">
             <label className="settings-option">
               <input type="checkbox" checked={settings.autoPlayTranslatedVoice} onChange={(event) => updateField('autoPlayTranslatedVoice', event.target.checked)} />
-              <span>{'\ubc88\uc5ed \uc644\ub8cc \uc2dc \uc790\ub3d9 \uc74c\uc131 \uc7ac\uc0dd'}</span>
+              <span>번역 완료 시 자동 음성 재생</span>
             </label>
             <label className="settings-option">
               <input type="checkbox" checked={settings.highContrastMode} onChange={(event) => updateField('highContrastMode', event.target.checked)} />
-              <span>{'\ub192\uc740 \ub300\ube44 \ubaa8\ub4dc'}</span>
+              <span>높은 대비 모드</span>
             </label>
             <label className="settings-option">
               <input type="checkbox" checked={settings.compactCards} onChange={(event) => updateField('compactCards', event.target.checked)} />
-              <span>{'\ucef4\ud329\ud2b8 \uce74\ub4dc \ub808\uc774\uc544\uc6c3'}</span>
+              <span>컴팩트 카드 레이아웃</span>
             </label>
           </div>
         </div>
 
         <div className="panel">
-          <div className="panel-title">{'\uc801\uc6a9 \uc548\ub0b4'}</div>
+          <div className="panel-title">적용 안내</div>
           <div className="settings-summary-list">
-            <div>{`- ${'\uae30\ubcf8 \uc5b8\uc5b4'}: ${languages.find((language) => language.code === settings.primaryLanguage)?.label || settings.primaryLanguage}`}</div>
-            <div>{`- ${'\ubc88\uc5ed \uc5b8\uc5b4'}: ${languages.find((language) => language.code === settings.secondaryLanguage)?.label || settings.secondaryLanguage}`}</div>
-            <div>{`- ${settings.autoPlayTranslatedVoice ? '\uc790\ub3d9 \uc74c\uc131 \uc7ac\uc0dd \uc0ac\uc6a9' : '\uc790\ub3d9 \uc74c\uc131 \uc7ac\uc0dd \uc548 \ud568'}`}</div>
+            <div>{`- 기본 언어: ${languages.find((language) => language.code === settings.primaryLanguage)?.label || settings.primaryLanguage}`}</div>
+            <div>{`- 번역 언어: ${languages.find((language) => language.code === settings.secondaryLanguage)?.label || settings.secondaryLanguage}`}</div>
+            <div>{`- ${settings.autoPlayTranslatedVoice ? '자동 음성 재생 사용' : '자동 음성 재생 안 함'}`}</div>
           </div>
           <div className="button-row">
-            <button className="btn-primary react-btn-auto" type="button" onClick={handleSave}>{'\uc800\uc7a5'}</button>
+            <button className="btn-primary react-btn-auto" type="button" onClick={handleSave}>저장</button>
           </div>
         </div>
       </div>
@@ -95,9 +105,10 @@ export default function EnvironmentSettingsPage({ languages, onSave, embedded = 
   return (
     <div className="page active">
       <div className="section-header">
-        <div className="section-title">{'\ud658\uacbd \uc124\uc815'}</div>
+        <div className="section-title">환경 설정</div>
       </div>
       {content}
     </div>
   );
 }
+
