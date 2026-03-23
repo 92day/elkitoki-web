@@ -425,6 +425,15 @@ body[data-theme="light"]
 
 .alert-content-grow {
   flex: 1;
+  min-width: 0;
+}
+
+.alert-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  line-height: 1.6;
 }
 
 .recorder-box-spaced {
@@ -2182,6 +2191,14 @@ body[data-font-scale="large"] .mypage-dialog {
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
+.record-btn,
+.walkie-record-btn {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+}
+
 .walkie-action-row {
   width: 100%;
   justify-content: center;
@@ -2355,6 +2372,7 @@ body[data-font-scale="large"] .mypage-dialog {
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.18s ease, box-shadow 0.18s ease;
+  min-height: 520px;
 }
 
 .photo-card:hover {
@@ -2379,6 +2397,14 @@ body[data-font-scale="large"] .mypage-dialog {
   flex-direction: column;
   gap: 10px;
   padding: 14px;
+  flex: 1 1 auto;
+}
+
+.photo-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
 .photo-risk-badge {
@@ -2413,6 +2439,10 @@ body[data-font-scale="large"] .mypage-dialog {
   font-size: 14px;
   font-weight: 700;
   line-height: 1.55;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .photo-action {
@@ -2422,6 +2452,10 @@ body[data-font-scale="large"] .mypage-dialog {
   color: var(--text);
   font-size: 12px;
   line-height: 1.6;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .photo-risk-type-list {
@@ -2457,6 +2491,7 @@ body[data-font-scale="large"] .mypage-dialog {
   gap: 8px;
   font-size: 11px;
   color: var(--muted);
+  margin-top: auto;
 }
 
 .photo-vision-tag {
@@ -2520,13 +2555,13 @@ body[data-font-scale="large"] .mypage-dialog {
 .photo-modal-scene-card {
   display: flex;
   flex-direction: column;
-  min-height: 360px;
+  min-height: 320px;
 }
 
 .photo-modal-structured-text-long {
   flex: 1 1 auto;
-  min-height: 300px;
-  max-height: min(42vh, 460px);
+  min-height: 0;
+  max-height: min(34vh, 360px);
   overflow-y: auto;
   padding-right: 6px;
 }

@@ -2,6 +2,15 @@
 
 export function getApiBase() {
   if (typeof window === 'undefined') return 'http://localhost:8000';
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const queryApi = (params.get('api') || '').trim();
+    if (queryApi) {
+      const normalized = queryApi.replace(/\/$/, '');
+      window.localStorage.setItem('ELKITOKI_API', normalized);
+      return normalized;
+    }
+  } catch {}
   const saved = window.localStorage.getItem('ELKITOKI_API');
   if (saved && saved.trim()) return saved.trim().replace(/\/$/, '');
   return window.location.protocol + '//' + window.location.hostname + ':8000';
