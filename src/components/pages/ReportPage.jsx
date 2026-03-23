@@ -85,13 +85,26 @@
             <div className="walkie-mic-stack">
               <button
                 className={`record-btn walkie-record-btn ${speech.isListening ? 'recording' : ''}`}
-                onPointerDown={(event) => {
+                onMouseDown={(event) => {
                   event.preventDefault();
                   handlePressToTalkStart();
                 }}
-                onPointerUp={handlePressToTalkEnd}
-                onPointerLeave={handlePressToTalkEnd}
-                onPointerCancel={handlePressToTalkEnd}
+                onMouseUp={handlePressToTalkEnd}
+                onMouseLeave={handlePressToTalkEnd}
+                onTouchStart={(event) => {
+                  event.preventDefault();
+                  handlePressToTalkStart();
+                }}
+                onTouchEnd={(event) => {
+                  event.preventDefault();
+                  handlePressToTalkEnd();
+                }}
+                onTouchCancel={(event) => {
+                  event.preventDefault();
+                  handlePressToTalkEnd();
+                }}
+                onContextMenu={(event) => event.preventDefault()}
+                onSelect={(event) => event.preventDefault()}
                 type="button"
               >
                 🎤

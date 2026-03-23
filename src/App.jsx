@@ -46,8 +46,6 @@ export default function App() {
   const [callingWorker, setCallingWorker] = useState('');
   const [photos, setPhotos] = useState([]);
   const [selectedPhoto, setSelectedPhoto] = useState(null);
-  const [photoAnalysisKo, setPhotoAnalysisKo] = useState({});
-  const [photoAnalysisLoading, setPhotoAnalysisLoading] = useState(false);
   const [confirmDialog, setConfirmDialog] = useState(null);
   const [confirmPending, setConfirmPending] = useState(false);
   const [showMyPage, setShowMyPage] = useState(false);
@@ -377,45 +375,6 @@ export default function App() {
 
     return () => window.clearInterval(timerId);
   }, [activePage, currentUser]);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadPhotoAnalysisKo() {
-      if (!selectedPhoto?.id || !selectedPhoto.ai_result?.trim()) return;
-      if (photoAnalysisKo[selectedPhoto.id]) return;
-
-      try {
-        setPhotoAnalysisLoading(true);
-        const data = await translateText(apiBase, {
-            text: selectedPhoto.ai_result,
-            source_language: 'en',
-            target_language: 'ko',
-          });
-
-        if (!cancelled) {
-          setPhotoAnalysisKo((prev) => ({
-            ...prev,
-            [selectedPhoto.id]: data.translated_text || '?쒓뎅??踰덉뿭 寃곌낵媛 ?놁뒿?덈떎.',
-          }));
-        }
-      } catch (error) {
-        if (!cancelled) {
-          setPhotoAnalysisKo((prev) => ({
-            ...prev,
-            [selectedPhoto.id]: `?쒓뎅??踰덉뿭??遺덈윭?ㅼ? 紐삵뻽?듬땲?? ${error.message}`,
-          }));
-        }
-      } finally {
-        if (!cancelled) setPhotoAnalysisLoading(false);
-      }
-    }
-
-    loadPhotoAnalysisKo();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedPhoto, photoAnalysisKo]);
 
   async function handleLogin(credentials) {
     try {
@@ -836,8 +795,6 @@ export default function App() {
         setSelectedPhoto={setSelectedPhoto}
         selectedPhoto={selectedPhoto}
         apiBase={apiBase}
-        photoAnalysisKo={photoAnalysisKo}
-        photoAnalysisLoading={photoAnalysisLoading}
         handleDeletePhoto={handleDeletePhoto}
       />
     );

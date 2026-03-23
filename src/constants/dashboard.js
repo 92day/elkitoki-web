@@ -1,6 +1,6 @@
 ﻿export const THEME_KEY = 'dashboard_theme';
 export const AUTH_STORAGE_KEY = 'elkitoki_auth_token';
-export const WEATHER_REFRESH_MS = 5 * 60 * 1000;
+export const WEATHER_REFRESH_MS = 60 * 60 * 1000;
 
 export const ZONES = [
   { id: 1, name: 'A\uad6c\uc5ed', description: 'B2', task: '\ucca0\uadfc \uc791\uc5c5', risk: 'safe' },
