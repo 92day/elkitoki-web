@@ -33,16 +33,12 @@ export const LANGUAGES = [
   { code: 'ko', label: '\ud55c\uad6d\uc5b4', badge: 'KR', flagPath: '/flags/kr.svg', speech: 'ko-KR', voice: 'ko-KR' },
   { code: 'en', label: '\uc601\uc5b4', badge: 'US', flagPath: '/flags/us.svg', speech: 'en-US', voice: 'en-US' },
   { code: 'vi', label: '\ubca0\ud2b8\ub0a8\uc5b4', badge: 'VN', flagPath: '/flags/vn.svg', speech: 'vi-VN', voice: 'vi-VN' },
-  { code: 'th', label: '\ud0dc\uad6d\uc5b4', badge: 'TH', flagPath: '/flags/th.svg', speech: 'th-TH', voice: 'th-TH' },
   { code: 'uz', label: '\uc6b0\uc988\ubca0\ud06c\uc5b4', badge: 'UZ', flagPath: '/flags/uz.svg', speech: 'uz-UZ', voice: 'uz-UZ' },
-  { code: 'mn', label: '\ubabd\uace8\uc5b4', badge: 'MN', flagPath: '/flags/mn.svg', speech: 'mn-MN', voice: 'mn-MN' },
   { code: 'zh-cn', label: '\uc911\uad6d\uc5b4(\uac04\uccb4)', badge: 'CN', flagPath: '/flags/cn.svg', speech: 'zh-CN', voice: 'zh-CN' },
   { code: 'ja', label: '\uc77c\ubcf8\uc5b4', badge: 'JP', flagPath: '/flags/jp.svg', speech: 'ja-JP', voice: 'ja-JP' },
   { code: 'id', label: '\uc778\ub3c4\ub124\uc2dc\uc544\uc5b4', badge: 'ID', flagPath: '/flags/id.svg', speech: 'id-ID', voice: 'id-ID' },
   { code: 'tl', label: '\ud544\ub9ac\ud540\uc5b4', badge: 'PH', flagPath: '/flags/ph.svg', speech: 'fil-PH', voice: 'fil-PH' },
-  { code: 'ne', label: '\ub124\ud314\uc5b4', badge: 'NP', flagPath: '/flags/np.svg', speech: 'ne-NP', voice: 'ne-NP' },
   { code: 'ru', label: '\ub7ec\uc2dc\uc544\uc5b4', badge: 'RU', flagPath: '/flags/ru.svg', speech: 'ru-RU', voice: 'ru-RU' },
-  { code: 'km', label: '\ud06c\uba54\ub974\uc5b4', badge: 'KH', flagPath: '/flags/kh.svg', speech: 'km-KH', voice: 'km-KH' },
 ];
 
 export const WORKER_ROLE_OPTIONS = ['\uc18c\uc7a5', '\uc548\uc804\uad00\ub9ac\uc790', '\ud604\uc7a5\uad00\ub9ac\uc790', '\ud604\uc7a5\uc791\uc5c5\uc790', '\uae30\ud0c0'];
