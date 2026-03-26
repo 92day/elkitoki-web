@@ -5,7 +5,7 @@
         <div className="site-badge">
           <div className="icon">{'🏗️'}</div>
           <div>
-            <div className="site-name">{'창천동 한빛빌딩 4층 3차 건설현장'}</div>
+            <div className="site-name">{'창천동 한빛빌딩 4층 3차 건설 현장'}</div>
             <div className="site-sub">{'서울 서대문구 · 공정률 67% · 현장코드 #LGEDX-2026-92'}</div>
           </div>
         </div>
