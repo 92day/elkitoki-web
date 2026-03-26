@@ -5,18 +5,19 @@ import useClockDisplay from './hooks/useClockDisplay';
 import useSensorStream from './hooks/useSensorStream';
 import useCommunicationActions from './hooks/useCommunicationActions';
 import './App.css';
-import { AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_ROLE_OPTIONS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
+import { ALERT_STATUS_LABELS, AUTH_STORAGE_KEY, LANGUAGES, NAV_SECTIONS, PROGRESS_ITEMS, THEME_KEY, WEATHER_REFRESH_MS, WORKER_ROLE_OPTIONS, WORKER_STATUS_LABELS, ZONES } from './constants/dashboard';
 import { formatTimer, getApiBase, getSpeechErrorMessage, getWeatherVisual, getZoneMeta, isLegacyPlaceholder } from './utils/dashboard';
 import { ConfirmDialog, MyPageModal, SidebarNav, SiteTopbar } from './components/layout';
 import { AlertsPage, DailyWorkLogPage, DashboardPage, LoginPage, PhotosPage, ProgressPage, ReportPage, WorkerCallPage, WorkersPage, ZonesPage } from './components/pages';
 import { readEnvironmentSettings } from './components/pages/EnvironmentSettingsPage';
-import { createAlert, createWorker, fetchAlerts, fetchCurrentUser, fetchDailyLogEntries, fetchDailyLogSummary, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchWeather, fetchWorkers, loginUser, logoutUser, removePhoto, removeWorker, resolveAlert, translateText, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
+import { createAlert, createWorker, fetchAlerts, fetchCurrentUser, fetchDailyLogEntries, fetchDailyLogSummary, fetchLatestSensors, fetchPhotos, fetchTodayReports, fetchWeather, fetchWorkers, loginUser, logoutUser, removeAlert, removePhoto, removeWorker, resolveAlert, translateText, updateAlertStatus, updateWorkerStatus, uploadPhoto } from './services/dashboardApi';
 
 const LARGE_TEXT_KEY = 'dashboard_large_text_enabled';
 const WORKER_NAME_LABELS = {
   A: '이레드',
   B: '김그린',
 };
+const ACTIVE_ALERT_STATUSES = new Set(['pending']);
 
 export default function App() {
   const apiBase = useMemo(() => getApiBase(), []);
@@ -253,7 +254,10 @@ export default function App() {
   }
 
   async function loadWorkers() { const data = await fetchWorkers(apiBase); setWorkers(Array.isArray(data) ? data : []); }
-  async function loadAlerts() { const data = await fetchAlerts(apiBase); setAlerts(Array.isArray(data) ? data : []); }
+  async function loadAlerts() {
+    const data = await fetchAlerts(apiBase, { includeResolved: true });
+    setAlerts(Array.isArray(data) ? data : []);
+  }
   async function loadSensors() { const data = await fetchLatestSensors(apiBase); setSensors(data || { temperature: null, humidity: null, dust: null, gas: null, zoneNoiseById: {} }); }
   async function loadReports() { const data = await fetchTodayReports(apiBase); setReports(Array.isArray(data) ? data : []); }
   async function loadDailyLogEntriesData() { const data = await fetchDailyLogEntries(apiBase); setDailyLogEntries(Array.isArray(data) ? data : []); }
@@ -511,6 +515,34 @@ export default function App() {
     }
   }
 
+  async function handleUpdateAlertStatus(alertId, status) {
+    try {
+      await updateAlertStatus(apiBase, alertId, status);
+      await Promise.all([loadAlerts(), refreshReportViews()]);
+      setMessage(`알림 상태를 ${ALERT_STATUS_LABELS[status] || status}으로 변경했습니다.`);
+    } catch (error) {
+      setMessage(`알림 상태 변경에 실패했습니다: ${error.message}`);
+    }
+  }
+
+  async function handleDeleteAlert(alertId) {
+    openConfirmDialog({
+      title: '이 알림을 삭제할까요?',
+      description: '삭제한 알림은 복구할 수 없습니다.',
+      confirmLabel: '삭제',
+      tone: 'danger',
+      onConfirm: async () => {
+        try {
+          await removeAlert(apiBase, alertId);
+          await Promise.all([loadAlerts(), refreshReportViews()]);
+          setMessage('알림을 삭제했습니다.');
+        } catch (error) {
+          setMessage(`알림 삭제에 실패했습니다: ${error.message}`);
+        }
+      },
+    });
+  }
+
   function speakTranslatedText(text) {
     const speakText = (text || '').trim();
     if (!speakText) {
@@ -587,7 +619,8 @@ export default function App() {
   }
 
   function handleResolveAllAlerts() {
-    if (!alerts.length) return;
+    const activeAlerts = alerts.filter((alert) => ACTIVE_ALERT_STATUSES.has(alert.status || 'pending'));
+    if (!activeAlerts.length) return;
     openConfirmDialog({
       title: '안전 알림을 모두 해결 처리할까요?',
       description: '현재 미처리 안전 알림이 모두 해결 상태로 변경됩니다.',
@@ -595,7 +628,7 @@ export default function App() {
       tone: 'danger',
       onConfirm: async () => {
         try {
-          await Promise.all(alerts.map((alert) => resolveAlert(apiBase, alert.id)));
+          await Promise.all(activeAlerts.map((alert) => resolveAlert(apiBase, alert.id)));
           await loadAlerts();
           setMessage('안전 알림을 모두 해결 처리했습니다.');
         } catch (error) {
@@ -662,6 +695,8 @@ export default function App() {
   const currentTemp = typeof sensors.temperature?.value === 'number' ? (sensors.temperature.value.toFixed(1) + '°C') : '--°C';
   const zoneNoiseById = sensors.zoneNoiseById || {};
 
+  const activeAlerts = alerts.filter((alert) => ACTIVE_ALERT_STATUSES.has((alert.status || 'pending')));
+
   function renderDashboardPage() {
     return (
       <DashboardPage
@@ -672,7 +707,7 @@ export default function App() {
         weatherWind={weatherWind}
         weatherSunset={weatherSunset}
         activeWorkers={activeWorkers}
-        alerts={alerts}
+        alerts={activeAlerts}
         currentTemp={currentTemp}
         ZONES={ZONES}
         zoneCounts={zoneCounts}
@@ -718,6 +753,8 @@ export default function App() {
         handleCreateAlert={handleCreateAlert}
         alerts={alerts}
         handleResolveAlert={handleResolveAlert}
+        handleUpdateAlertStatus={handleUpdateAlertStatus}
+        handleDeleteAlert={handleDeleteAlert}
         handleResolveAllAlerts={handleResolveAllAlerts}
         zones={ZONES}
       />
@@ -838,7 +875,7 @@ export default function App() {
           <SidebarNav
             navSections={sidebarNavSections}
             activePage={activePage}
-            alertsCount={alerts.length}
+            alertsCount={activeAlerts.length}
             setActivePage={setActivePage}
             currentUser={currentUser}
             onOpenMyPage={() => setShowMyPage(true)}

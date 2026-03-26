@@ -20,6 +20,18 @@ export const NOISE_STATUS_LABELS = {
   danger: '\uacbd\uace0',
 };
 
+export const ALERT_STATUS_LABELS = {
+  pending: '\ubbf8\ucc98\ub9ac',
+  resolved: '\uc870\uce58\uc644\ub8cc',
+};
+
+export const ALERT_LEVEL_LABELS = {
+  high: '\ub192\uc74c',
+  mid: '\uc911\uac04',
+  medium: '\uc911\uac04',
+  low: '\ub0ae\uc74c',
+};
+
 export const PROGRESS_ITEMS = [
   { name: '\ud1a0\uacf5 \ubc0f \uac00\uc124', pct: 100, color: 'var(--safe)' },
   { name: '\ucca0\uadfc/\uac70\ud478\uc9d1', pct: 78, color: 'var(--safe)' },
