@@ -21,7 +21,14 @@
 
 export const fetchWeather = (apiBase) => apiRequest(apiBase, '/api/weather/seoul');
 export const fetchWorkers = (apiBase) => apiRequest(apiBase, '/api/workers/');
-export const fetchAlerts = (apiBase) => apiRequest(apiBase, '/api/alerts/');
+export const fetchAlerts = (apiBase, options = {}) => {
+  const params = new URLSearchParams();
+  if (options.includeResolved !== undefined) {
+    params.set('include_resolved', String(options.includeResolved));
+  }
+  const query = params.toString();
+  return apiRequest(apiBase, `/api/alerts/${query ? `?${query}` : ''}`);
+};
 export const fetchLatestSensors = (apiBase) => apiRequest(apiBase, '/api/sensors/latest');
 export const fetchReports = (apiBase) => apiRequest(apiBase, '/api/reports/');
 export const fetchTodayReports = (apiBase) => apiRequest(apiBase, '/api/reports/today');
@@ -41,6 +48,8 @@ export const removeWorker = (apiBase, workerId) => apiRequest(apiBase, `/api/wor
 
 export const createAlert = (apiBase, payload) => apiRequest(apiBase, '/api/alerts/', { method: 'POST', body: payload });
 export const resolveAlert = (apiBase, alertId) => apiRequest(apiBase, `/api/alerts/${alertId}/resolve`, { method: 'PATCH' });
+export const updateAlertStatus = (apiBase, alertId, status) => apiRequest(apiBase, `/api/alerts/${alertId}`, { method: 'PATCH', body: { status } });
+export const removeAlert = (apiBase, alertId) => apiRequest(apiBase, `/api/alerts/${alertId}`, { method: 'DELETE' });
 export const createDeviceCommand = (apiBase, payload) => apiRequest(apiBase, '/api/device/commands', { method: 'POST', body: payload });
 
 export const translateText = (apiBase, payload) => apiRequest(apiBase, '/api/translate', { method: 'POST', body: payload });
