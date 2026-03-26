@@ -744,6 +744,7 @@ export default function App() {
         savingReport={savingReport}
         handleSaveWalkie={handleSaveWalkie}
         handleResetWalkie={handleResetWalkie}
+        handleSpeakTranslatedText={() => speakTranslatedText(translatedText)}
         handlePressToTalkStart={handlePressToTalkStart}
         handlePressToTalkEnd={handlePressToTalkEnd}
         todayReports={translationReports}

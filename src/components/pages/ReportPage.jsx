@@ -16,6 +16,7 @@
   savingReport,
   handleSaveWalkie,
   handleResetWalkie,
+  handleSpeakTranslatedText,
   handlePressToTalkStart,
   handlePressToTalkEnd,
   todayReports = [],
@@ -114,6 +115,14 @@
           </div>
 
           <div className="walkie-action-row">
+            <button
+              className="btn-sm react-btn-auto"
+              onClick={handleSpeakTranslatedText}
+              disabled={!translatedText || translating}
+              type="button"
+            >
+              음성 재생
+            </button>
             <button className="btn-primary react-btn-auto" onClick={handleSaveWalkie} disabled={savingReport} type="button">{savingReport ? '저장 중...' : '저장'}</button>
             <button className="btn-sm react-btn-auto" onClick={handleResetWalkie} type="button">초기화</button>
           </div>
